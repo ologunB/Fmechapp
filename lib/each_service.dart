@@ -220,6 +220,7 @@ class _EachServiceState extends State<EachService> {
                                       ),
                                     ],
                                   ),
+/*
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -234,6 +235,7 @@ class _EachServiceState extends State<EachService> {
                                       ),
                                     ),
                                   ),
+*/
                                 ],
                               ),
                               title: Text(
