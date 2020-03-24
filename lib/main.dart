@@ -62,7 +62,7 @@ class _MyWrapperState extends State<MyWrapper> {
                     image: AssetImage(
                       "assets/images/app_back.jpg",
                     ),
-                    fit: BoxFit.fill),
+                    fit: BoxFit.fill,),
               ),
             ),
           );

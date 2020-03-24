@@ -11,6 +11,7 @@ class MechHomeFragment extends StatefulWidget {
 
 class _MechHomeFragmentState extends State<MechHomeFragment>
     with AutomaticKeepAliveClientMixin {
+
   @override
   bool get wantKeepAlive => true;
   List<String> list = [
@@ -120,18 +121,6 @@ class _MechHomeFragmentState extends State<MechHomeFragment>
 
   @override
   void initState() {
-    list = [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-    ];
-    getJobs();
     setState(() {
       list = tempList;
     });
