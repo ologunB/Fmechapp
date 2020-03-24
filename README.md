@@ -60,5 +60,5 @@ $ cd flutsapp/
  - [ ]
  
 ## 🤓 Developer(s)
-**Ologunbaba Temitope Daniel**
-**Abada Samuel Oghenero**
+- **Ologunbaba Temitope Daniel**
+- **Abada Samuel Oghenero**
