@@ -45,7 +45,7 @@ Download the `apk-release.apk` to try out Flutsapp
 #### 2. Clone the repo
 
 ```sh
-$ git clone https://github.com/mastersam07/flutsapp.git
+$ git clone https://github.com/ologunB/Fmechapp/flutsapp.git
 $ cd flutsapp/
 ```
 
