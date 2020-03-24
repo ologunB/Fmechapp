@@ -1,16 +1,64 @@
-# mechapp
+# mechappp
 
-A new Flutter application.
+A new flutter application
 
-## Getting Started
+> This app is under development
+>
+>
 
-This project is a starting point for a Flutter application.
+## Demo
+Download the `apk-release.apk` to try out Flutsapp
+<br>
+<a href="https://github.com/ologunB/Fmechapp/raw/master/app-release.apk"><img src="https://playerzon.com/asset/download.png" width="200"></img></a>
+<br>
 
-A few resources to get you started if this is your first Flutter project:
+## 💻 Requirements
+* Any Operating System (ie. MacOS X, Linux, Windows)
+* Any IDE with Flutter SDK installed (ie. IntelliJ, Android Studio, VSCode etc)
+* A little knowledge of Dart and Flutter
+* Hands to code 🤓
+* A brain to think 🤓
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## ✨ Features
+- [ ]
+- [ ]
+- [ ]
+- [ ]
+- [ ]
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+## Screenshots
+*
+*
+*
+*
+*
+
+## Dependencies
+* [Flutter](https://flutter.dev/)
+* [Firestore](https://github.com/flutter/plugins/tree/master/packages/cloud_firestore)
+
+## Getting started
+
+#### 1. [Setup Flutter](https://flutter.dev/docs/get-started/install)
+
+#### 2. Clone the repo
+
+```sh
+$ git clone https://github.com/mastersam07/flutsapp.git
+$ cd flutsapp/
+```
+
+#### 3. Setup the firebase app
+
+
+# What's Next?
+ - [ ]
+ - [ ]
+ - [ ]
+ - [ ]
+ - [ ]
+ 
+## 🤓 Developer(s)
+- **Ologunbaba Temitope Daniel**
+- **Abada Samuel Oghenero**

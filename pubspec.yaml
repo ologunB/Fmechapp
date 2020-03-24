@@ -9,20 +9,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences:
+  shared_preferences: ^0.5.6+3
   cupertino_icons: ^0.1.2
-  image_picker: #TODO configure for iOS later
+  image_picker: ^0.6.3+4 #TODO configure for iOS later
   google_maps_flutter: ^0.5.24+1 #TODO configure for iOS later
   firebase_database:
   intent: ^1.1.0
   firebase_core: ^0.4.0+9
   firebase_auth: ^0.14.0+5
-  url_launcher:
-  cached_network_image:
+  url_launcher: ^5.4.2
+  cached_network_image: ^2.0.0
   rave_flutter: ^0.0.9-alpha+1 #TODO configure the iOS version later
   geolocator: ^5.3.0 #TODO configure the iOS version later
   geocoder: ^0.2.1
-  provider:
+  provider: ^4.0.4
 
 dev_dependencies:
   flutter_test:
