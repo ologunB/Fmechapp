@@ -602,16 +602,18 @@ class _MechSignUpState extends State<MechSignUp> {
                                               textAlign: TextAlign.left,
                                               style: TextStyle(fontSize: 18),
                                             ),
-                                            value: specifyBoolList[index],
+                                            value: _specifyBoolList[index],
                                             onChanged: (e) {
                                               _setState(
                                                 () {
-                                                  if (specifyBoolList[index]) {
-                                                    specifyBoolList[index] =
-                                                        !specifyBoolList[index];
+                                                  if (_specifyBoolList[index]) {
+                                                    _specifyBoolList[index] =
+                                                        !_specifyBoolList[
+                                                            index];
                                                   } else {
-                                                    specifyBoolList[index] =
-                                                        !specifyBoolList[index];
+                                                    _specifyBoolList[index] =
+                                                        !_specifyBoolList[
+                                                            index];
                                                   }
                                                 },
                                               );
@@ -711,17 +713,18 @@ class _MechSignUpState extends State<MechSignUp> {
                                               textAlign: TextAlign.left,
                                               style: TextStyle(fontSize: 18),
                                             ),
-                                            value: categoryBoolList[index],
+                                            value: _categoryBoolList[index],
                                             onChanged: (e) {
                                               _setState(
                                                 () {
-                                                  if (categoryBoolList[index]) {
-                                                    categoryBoolList[index] =
-                                                        !categoryBoolList[
+                                                  if (_categoryBoolList[
+                                                      index]) {
+                                                    _categoryBoolList[index] =
+                                                        !_categoryBoolList[
                                                             index];
                                                   } else {
-                                                    categoryBoolList[index] =
-                                                        !categoryBoolList[
+                                                    _categoryBoolList[index] =
+                                                        !_categoryBoolList[
                                                             index];
                                                   }
                                                 },
@@ -933,3 +936,45 @@ class _MechSignUpState extends State<MechSignUp> {
     );
   }
 }
+
+List<bool> _specifyBoolList = [
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+];
+
+List<bool> _categoryBoolList = [
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+];

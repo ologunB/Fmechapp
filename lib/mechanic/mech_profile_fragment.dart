@@ -6,7 +6,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mechapp/dropdown_noti_cate.dart';
+import 'package:mechapp/header_image.dart';
 import 'package:mechapp/libraries/custom_button.dart';
+import 'package:mechapp/libraries/toast.dart';
 
 import '../log_in.dart';
 import '../utils/type_constants.dart';
@@ -15,6 +18,8 @@ class MechProfileFragment extends StatefulWidget {
   @override
   _MechProfileFragmentState createState() => _MechProfileFragmentState();
 }
+
+var rootRef = FirebaseDatabase.instance.reference();
 
 class _MechProfileFragmentState extends State<MechProfileFragment>
     with AutomaticKeepAliveClientMixin {
@@ -49,10 +54,8 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
   Map dATA = {};
 
   Future<Map> getProfile() async {
-    DatabaseReference dataRef = FirebaseDatabase.instance
-        .reference()
-        .child("Mechanic Collection")
-        .child(mUID);
+    DatabaseReference dataRef =
+        rootRef.child("Mechanic Collection").child(mUID);
 
     await dataRef.once().then((snapshot) {
       dATA = snapshot.value;
@@ -157,325 +160,33 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          Container(
-                            height: 100,
-                            width: 100,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50.0),
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                getImage();
-                              },
-                              /*child: _mainPicture == null
-                                  ? Image(
-                                      image: AssetImage(
-                                          "assets/images/add_camera.png"),
-                                      height: 90,
-                                      fit: BoxFit.contain)
-                                  : Image.file(_mainPicture,
-                                      height: 90, fit: BoxFit.contain), */
-                              child: CachedNetworkImage(
-                                imageUrl: profileImageUrl,
-                                height: 40,
-                                width: 40,
-                                placeholder: (context, url) => Image(
-                                    image: AssetImage(
-                                        "assets/images/add_camera.png"),
-                                    height: 90,
-                                    fit: BoxFit.contain),
-                                errorWidget: (context, url, error) => Image(
-                                    image: AssetImage(
-                                        "assets/images/add_camera.png"),
-                                    height: 90,
-                                    fit: BoxFit.contain),
-                              ),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                      hintText: "Choose Specification"),
-                                  style: TextStyle(fontSize: 18),
-                                  readOnly: true,
-                                  controller: specifiC,
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => CupertinoAlertDialog(
-                                        title: Text(
-                                          "Choose Specification",
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                        content: Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              2,
-                                          child: ListView.builder(
-                                            itemCount: specifyList.length,
-                                            itemBuilder: (context, index) {
-                                              tempSpecBool = specBool;
-                                              return Padding(
-                                                  padding: EdgeInsets.all(5.0),
-                                                  child: Material(
-                                                      child: StatefulBuilder(
-                                                    builder:
-                                                        (context, _setState) =>
-                                                            CheckboxListTile(
-                                                      title: Text(
-                                                        specifyList[index],
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                        style: TextStyle(
-                                                            fontSize: 18),
-                                                      ),
-                                                      value: specBool[index],
-                                                      onChanged: (e) {
-                                                        _setState(
-                                                          () {
-                                                            if (specBool[
-                                                                index]) {
-                                                              specBool[index] =
-                                                                  !specBool[
-                                                                      index];
-                                                            } else {
-                                                              specBool[index] =
-                                                                  !specBool[
-                                                                      index];
-                                                            }
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  )));
-                                            },
-                                          ),
-                                        ),
-                                        actions: <Widget>[
-                                          Center(
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5.0),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
-                                                    color: Colors.red),
-                                                child: FlatButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                    specBool = tempSpecBool;
-                                                  },
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: <Widget>[
-                                                      Icon(
-                                                        Icons.close,
-                                                        color: Colors.white,
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          "Cancel",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w900,
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          CustomButton(
-                                            title: "OK",
-                                            onPress: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            icon: Icon(
-                                              Icons.done,
-                                              color: Colors.white,
-                                            ),
-                                            iconLeft: false,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Icon(
-                                Icons.unfold_more,
-                                color: primaryColor,
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                      hintText: "Choose Category"),
-                                  style: TextStyle(fontSize: 18),
-                                  readOnly: true,
-                                  controller: categoryC,
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => CupertinoAlertDialog(
-                                        title: Text(
-                                          "Choose Category",
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                        content: Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              2,
-                                          child: ListView.builder(
-                                            itemCount: categoryList.length,
-                                            itemBuilder: (context, index) {
-                                              tempCategoryBool = categoryBool;
-
-                                              return Padding(
-                                                  padding: EdgeInsets.all(5.0),
-                                                  child: Material(
-                                                      child: StatefulBuilder(
-                                                    builder:
-                                                        (context, _setState) =>
-                                                            CheckboxListTile(
-                                                      title: Text(
-                                                        categoryList[index],
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                        style: TextStyle(
-                                                            fontSize: 18),
-                                                      ),
-                                                      value:
-                                                          categoryBool[index],
-                                                      onChanged: (e) {
-                                                        _setState(
-                                                          () {
-                                                            if (categoryBool[
-                                                                index]) {
-                                                              categoryBool[
-                                                                      index] =
-                                                                  !categoryBool[
-                                                                      index];
-                                                            } else {
-                                                              categoryBool[
-                                                                      index] =
-                                                                  !categoryBool[
-                                                                      index];
-                                                            }
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  )));
-                                            },
-                                          ),
-                                        ),
-                                        actions: <Widget>[
-                                          Center(
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5.0),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
-                                                    color: Colors.red),
-                                                child: FlatButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                    categoryBool =
-                                                        tempCategoryBool;
-                                                  },
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: <Widget>[
-                                                      Icon(
-                                                        Icons.close,
-                                                        color: Colors.white,
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          "Cancel",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w900,
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          CustomButton(
-                                            title: "OK",
-                                            onPress: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            icon: Icon(
-                                              Icons.done,
-                                              color: Colors.white,
-                                            ),
-                                            iconLeft: false,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Icon(
-                                Icons.unfold_more,
-                                color: primaryColor,
-                              ),
-                            ],
-                          ),
+                          HeaderImage(profileImageUrl),
+                          NotiAndCategory(specifiC, specBool, tempCategoryBool,
+                              "Specifications", specifyList),
+                          NotiAndCategory(categoryC, categoryBool,
+                              tempCategoryBool, "Category", categoryList),
                           TextField(
                             controller: nameC,
-                            decoration:
-                                InputDecoration(hintText: "Company Name"),
+                            decoration: InputDecoration(
+                                labelText: "Company Name",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                             readOnly: true,
                           ),
                           TextField(
-                            decoration:
-                                InputDecoration(hintText: "Phone Number"),
+                            decoration: InputDecoration(
+                                hintText: "Phone Number",
+                                labelText: "Phone Number",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                             keyboardType: TextInputType.number,
                             controller: phoneNo,
                           ),
                           TextField(
                             controller: emailC,
-                            decoration: InputDecoration(hintText: "Email"),
+                            decoration: InputDecoration(
+                                labelText: "Email",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                             readOnly: true,
                             keyboardType: TextInputType.emailAddress,
@@ -486,8 +197,10 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                               Expanded(
                                 child: TextField(
                                   controller: streetNameC,
-                                  decoration:
-                                      InputDecoration(hintText: "Street name"),
+                                  decoration: InputDecoration(
+                                      labelText: "Street name",
+                                      labelStyle:
+                                          TextStyle(color: Colors.blue)),
                                   style: TextStyle(fontSize: 18),
                                   readOnly: true,
                                   onTap: () {},
@@ -501,26 +214,34 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                           ),
                           TextField(
                             controller: cityC,
-                            decoration: InputDecoration(hintText: "City"),
+                            decoration: InputDecoration(
+                                labelText: "City",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                             readOnly: true,
                           ),
                           TextField(
                             controller: localityC,
-                            decoration: InputDecoration(hintText: "Locality"),
+                            decoration: InputDecoration(
+                                labelText: "Locality",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             readOnly: true,
                             style: TextStyle(fontSize: 18),
                           ),
                           TextField(
                             controller: companyWebC,
-                            decoration:
-                                InputDecoration(hintText: "Company's website"),
+                            decoration: InputDecoration(
+                                hintText: "Company's website",
+                                labelText: "Company's website",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                           ),
                           TextField(
                             controller: descptC,
-                            decoration:
-                                InputDecoration(hintText: "Description"),
+                            decoration: InputDecoration(
+                                hintText: "Description",
+                                labelText: "Description",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                           ),
                           Center(
@@ -601,20 +322,27 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                           ),
                           TextField(
                             controller: accNameC,
-                            decoration:
-                                InputDecoration(hintText: "Account Name"),
+                            decoration: InputDecoration(
+                                hintText: "Account Name",
+                                labelText: "Account Name",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                           ),
                           TextField(
                             controller: accNumC,
-                            decoration:
-                                InputDecoration(hintText: "Account Number"),
+                            decoration: InputDecoration(
+                                hintText: "Account Number",
+                                labelText: "Account Number",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                             keyboardType: TextInputType.number,
                           ),
                           TextField(
                             controller: bankNameC,
-                            decoration: InputDecoration(hintText: "Bank Name"),
+                            decoration: InputDecoration(
+                                hintText: "Bank Name",
+                                labelText: "Bank Name",
+                                labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                           ),
                           Padding(
@@ -631,11 +359,78 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                       "A Category must be selected", context);
                                   return;
                                 }
-                                if (!specifyBoolList.contains(true)) {
+                                if (!specBool.contains(true)) {
                                   showToast("A Specification must be selected",
                                       context);
                                   return;
                                 }
+
+                                List<String> specTempList = [];
+                                int intA = 0;
+                                for (bool item in specBool) {
+                                  if (item == true) {
+                                    specTempList.add(specifyList[intA]);
+                                  }
+                                  intA++;
+                                }
+
+                                List<String> cateTempList = [];
+                                int intB = 0;
+                                for (bool item in categoryBool) {
+                                  if (item == true) {
+                                    cateTempList.add(categoryList[intB]);
+                                  }
+                                  intB++;
+                                }
+
+                                showToast("Updating...", context);
+
+                                final Map<String, Object> m = Map();
+
+                                m.putIfAbsent("Bank Account Name",
+                                    () => accNameC.text.toString());
+                                m.putIfAbsent("Bank Account Number",
+                                    () => accNumC.text.toString());
+                                m.putIfAbsent("Bank Name",
+                                    () => bankNameC.text.toString());
+                                m.putIfAbsent("Phone Number",
+                                    () => phoneNo.text.toString());
+                                m.putIfAbsent("Description",
+                                    () => descptC.text.toString());
+                                m.putIfAbsent("Website Url",
+                                    () => companyWebC.text.toString());
+                                m.putIfAbsent("Categories", () => cateTempList);
+                                m.putIfAbsent(
+                                    "Specifications", () => specTempList);
+
+                                /*        db
+                                    .collection("Mechanics")
+                                    .document(Uid_)
+                                    .update(m);
+                                db.collection("All").document(Uid_).update(m);
+
+                                  Firestore.instance.collection("Mechanics").document(mUID).setData({
+          "ID": user.uid,
+          "Name": user.displayName,
+          "Picture": user.photoUrl
+        });
+         Firestore.instance.collection("All").document(mUID).setData({
+          "ID": user.uid,
+          "Name": user.displayName,
+          "Picture": user.photoUrl
+        });*/
+                                if (_mainPicture != null) {}
+                                if (_previous1 != null) {}
+                                if (_previous2 != null) {}
+                                rootRef
+                                    .child("Mechanic Collection")
+                                    .child(mUID)
+                                    .update(m)
+                                    .then((value) => () {
+                                          Toast.show("Updated!", context,
+                                              duration: Toast.LENGTH_LONG,
+                                              gravity: Toast.CENTER);
+                                        });
                               },
                               icon: Icon(
                                 Icons.done,
@@ -658,6 +453,7 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
   }
 
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
     return Container(

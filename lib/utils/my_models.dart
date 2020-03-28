@@ -116,14 +116,15 @@ class Mechanic {
 
 class EachJob {
   String id;
-  String jobsDone;
+  String _jobsDone;
 
-  EachJob(this.jobsDone);
+  EachJob(this._jobsDone);
 
-  String get name => jobsDone;
+  String get jobsDone => _jobsDone;
 
   EachJob.fromSnapshot(DataSnapshot snapshot) {
-    jobsDone = snapshot.value["Completed Amount"];
+    _jobsDone = snapshot.key;
+    print("snapshot is : " + snapshot.toString());
   }
 }
 

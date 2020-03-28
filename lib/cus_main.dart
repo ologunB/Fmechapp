@@ -6,15 +6,14 @@ import 'package:mechapp/garage_fragment.dart';
 import 'package:mechapp/help_fragment.dart';
 import 'package:mechapp/home_fragment.dart';
 import 'package:mechapp/jobs_fragment.dart';
+import 'package:mechapp/libraries/custom_dialog.dart';
+import 'package:mechapp/libraries/drawerbehavior.dart';
 import 'package:mechapp/log_in.dart';
 import 'package:mechapp/nearby_fragment.dart';
 import 'package:mechapp/notifications_fragment.dart';
 import 'package:mechapp/shop_fragment.dart';
 import 'package:mechapp/utils/type_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'libraries/custom_dialog.dart';
-import 'libraries/drawerbehavior.dart';
 
 class CusMainPage extends StatefulWidget {
   @override
@@ -36,7 +35,7 @@ class _CusMainPageState extends State<CusMainPage> {
       ),
       new MenuItem(
         id: 'Nearby Services',
-        title: 'Mechanic / Service Nearby',
+        title: 'Mechanic/Service Nearby',
         icon: IconData(0xe55e, fontFamily: 'MaterialIcons'),
       ),
       new MenuItem(
@@ -95,10 +94,7 @@ class _CusMainPageState extends State<CusMainPage> {
     });
   }
 
-  Future<String> uid;
-  Future<String> email;
-  Future<String> name;
-  Future<String> type;
+  Future<String> uid, email, name, type;
 
   @override
   void initState() {

@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mechapp/utils/type_constants.dart';
 
 import 'libraries/custom_button.dart';
@@ -16,7 +18,20 @@ class AddCarActivity extends StatefulWidget {
 final carsReference =
     FirebaseDatabase.instance.reference().child("Car Collection").child(mUID);
 
-class _AddCarActivityState extends State<AddCarActivity> {
+class _AddCarActivityState extends State<AddCarActivity>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  File _carImage;
+
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      _carImage = image;
+    });
+  }
+
   TextEditingController _carMake = TextEditingController();
   TextEditingController _carModel = TextEditingController();
   TextEditingController _carRegNum = TextEditingController();
@@ -50,16 +65,27 @@ class _AddCarActivityState extends State<AddCarActivity> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Container(
-                        width: 60.0,
-                        height: 60.0,
-                        decoration: new BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: new DecorationImage(
-                            fit: BoxFit.fill,
-                            image: AssetImage("assets/images/add_camera.png"),
-                          ),
-                        ),
+                      InkWell(
+                        onTap: () {
+                          getImage();
+                        },
+                        child: _carImage == null
+                            ? Container(
+                                width: 100.0,
+                                height: 100.0,
+                                decoration: new BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: new DecorationImage(
+                                    fit: BoxFit.fill,
+                                    image: AssetImage(
+                                        "assets/images/add_camera.png"),
+                                  ),
+                                ),
+                              )
+                            : Image.file(_carImage,
+                                width: 100.0,
+                                height: 100.0,
+                                fit: BoxFit.contain),
                       ),
                       TextField(
                         decoration:

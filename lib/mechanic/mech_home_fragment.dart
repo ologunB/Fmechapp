@@ -9,32 +9,19 @@ class MechHomeFragment extends StatefulWidget {
   _MechHomeFragmentState createState() => _MechHomeFragmentState();
 }
 
+String t1 = "--",
+    t2 = "--",
+    t3 = "--",
+    t4 = "--",
+    t5 = "--",
+    t6 = "--",
+    t7 = "--",
+    t8 = "--";
+
 class _MechHomeFragmentState extends State<MechHomeFragment>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  List<String> list = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ];
-  List<String> tempList = [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ];
 
   Future<List<String>> getJobs() async {
     DatabaseReference dataRef = FirebaseDatabase.instance
@@ -45,30 +32,24 @@ class _MechHomeFragmentState extends State<MechHomeFragment>
     await dataRef.once().then((snapshot) {
       var DATA = snapshot.value;
 
-      String t1 = DATA['Total Job'];
-      String t2 = DATA['Total Amount'];
-      String t3 = DATA['Pending Job'];
-      String t4 = DATA['Pending Amount'];
-      String t5 = DATA['Pay pending Job'];
-      String t6 = DATA['Pay pending Amount'];
-      String t7 = DATA['Completed Job'];
-      String t8 = DATA['Completed Amount'];
-
-      tempList.clear();
-      tempList.insert(0, t1);
-      tempList.insert(1, t2);
-      tempList.insert(2, t3);
-      tempList.insert(3, t4);
-      tempList.insert(4, t5);
-      tempList.insert(5, t6);
-      tempList.insert(6, t7);
-      tempList.insert(7, t8);
+      setState(() async {
+        t1 = DATA['Total Job'];
+        t2 = DATA['Total Amount'];
+        t3 = DATA['Pending Job'];
+        t4 = DATA['Pending Amount'];
+        t5 = DATA['Pay pending Job'];
+        t6 = DATA['Pay pending Amount'];
+        t7 = DATA['Completed Job'];
+        t8 = DATA['Completed Amount'];
+      });
     });
 
+    List<String> list = [];
     return list;
   }
 
   Widget _buildFutureBuilder() {
+    getJobs();
     return Center(
       child: FutureBuilder<List<String>>(
         future: getJobs(),
@@ -80,15 +61,15 @@ class _MechHomeFragmentState extends State<MechHomeFragment>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _eachItem("Total Jobs", list[0], list[1], context),
-                    _eachItem("Pending Jobs", list[2], list[3], context),
+                    _eachItem("Total Jobs", t1, t2, context),
+                    _eachItem("Pending Jobs", t3, t4, context),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _eachItem("Pay Pending", list[4], list[5], context),
-                    _eachItem("Pay Completed", list[6], list[7], context),
+                    _eachItem("Pay Pending", t5, t6, context),
+                    _eachItem("Pay Completed", t7, t8, context),
                   ],
                 ),
               ],
@@ -120,21 +101,8 @@ class _MechHomeFragmentState extends State<MechHomeFragment>
 
   @override
   void initState() {
-    list = [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-    ];
     getJobs();
-    setState(() {
-      list = tempList;
-    });
+
     super.initState();
   }
 

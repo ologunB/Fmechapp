@@ -57,7 +57,7 @@ class _MechMainPageState extends State<MechMainPage> {
 
   var title = 'Home';
   var selectedMenuItemId = 'Home';
-  Widget currentWidget = MechHomeFragment();
+  Widget currentWidget;
   final List<Widget> pages = [
     MechHomeFragment(),
     MechProfileFragment(),
@@ -100,6 +100,12 @@ class _MechMainPageState extends State<MechMainPage> {
     type = _prefs.then((prefs) {
       return (prefs.getString('type') ?? "mechName");
     });
+
+    currentWidget = MechHomeFragment();
+
+    setState(() {
+      currentWidget = MechHomeFragment();
+    });
   }
 
   @override
@@ -122,11 +128,6 @@ class _MechMainPageState extends State<MechMainPage> {
                     ),
                   ),
                 ),
-//              Icon(
-//                Icons.person,
-//                size: 48,
-//                color: Colors.white,
-//              ),
                 Container(
                   margin: EdgeInsets.only(left: 16),
                   child: Column(
@@ -314,6 +315,7 @@ class _MechMainPageState extends State<MechMainPage> {
         menu: menu,
         selectorColor: Colors.blue,
         headerView: _headerView(),
+        footerView: _footerView(),
         animation: false,
         color: Theme.of(context).primaryColor,
         selectedItemId: selectedMenuItemId,
@@ -351,7 +353,6 @@ class _MechMainPageState extends State<MechMainPage> {
             });
           }
         },
-        footerView: _footerView(),
       ),
       contentView: Screen(
         contentBuilder: (context) => currentWidget,
