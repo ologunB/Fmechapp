@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 class CustomDialog extends StatefulWidget {
   final String title;
   final bool includeHeader;
-  final void Function() onPress;
+  final void Function() onClicked;
   final BuildContext context;
 
   CustomDialog(
       {Key key,
       this.title,
-      this.onPress,
+      this.onClicked,
       this.includeHeader = false,
       this.context})
       : super(key: key);
@@ -60,7 +60,7 @@ class _CustomDialogState extends State<CustomDialog> {
               ),
               child: FlatButton(
                 onPressed: () {
-                  widget.onPress();
+                  widget.onClicked();
                 },
                 child: Text(
                   "YES",

@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 String mUID, mEmail, mName, userType;
 
@@ -66,3 +69,18 @@ List<String> categoryList = [
   "Upholstery & Interior",
   "Wheel Balancing & Alignment",
 ];
+
+const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+String randomString() {
+  Random rnd = new Random(new DateTime.now().millisecondsSinceEpoch);
+  String result = "";
+  for (var i = 0; i < 12; i++) {
+    result += chars[rnd.nextInt(chars.length)];
+  }
+  return result;
+}
+
+String thePresentTime() {
+  return DateFormat("MMM d, yyyy HH:mm:ss a").format(DateTime.now());
+}

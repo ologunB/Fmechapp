@@ -1,6 +1,8 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mechapp/home_fragment.dart';
+import 'package:mechapp/utils/type_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'libraries/custom_button.dart';
@@ -15,6 +17,20 @@ class ViewMechProfile extends StatefulWidget {
 }
 
 class _ViewMechProfileState extends State<ViewMechProfile> {
+  String jobsDone = "--";
+
+  Future<String> getJobs() async {
+    DatabaseReference dataRef = FirebaseDatabase.instance
+        .reference()
+        .child("All Jobs Collection")
+        .child(mUID);
+
+    await dataRef.once().then((snapshot) {
+      jobsDone = snapshot.value['Total Job'];
+    });
+    return jobsDone;
+  }
+
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
@@ -77,7 +93,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                             "Description: ",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 color: Colors.red,
                                 fontWeight: FontWeight.w700),
                           ),
@@ -85,7 +101,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                             child: Text(
                               widget.mechanic.descrpt,
                               style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 22,
                                   color: primaryColor,
                                   fontWeight: FontWeight.w700),
                             ),
@@ -102,7 +118,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                             "Location: ",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 color: Colors.red,
                                 fontWeight: FontWeight.w700),
                           ),
@@ -110,7 +126,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                             child: Text(
                               widget.mechanic.streetName,
                               style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 22,
                                   color: primaryColor,
                                   fontWeight: FontWeight.w700),
                             ),
@@ -132,16 +148,33 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                                     color: Colors.red,
                                     fontWeight: FontWeight.w700),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "--",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      color: primaryColor,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                              )
+                              FutureBuilder<String>(
+                                  future: getJobs(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.done) {
+                                      return Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          jobsDone,
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: primaryColor,
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                      );
+                                    }
+                                    return Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "--",
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            color: primaryColor,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    );
+                                  })
                             ],
                           ),
                           Column(
@@ -156,7 +189,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
-                                  "--",
+                                  widget.mechanic.rating,
                                   style: TextStyle(
                                       fontSize: 18,
                                       color: primaryColor,
@@ -187,39 +220,39 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                             color: Colors.white,
                           ),
                         ),
-                        Visibility(
-                          child: CustomButton(
-                            title: "Create Job",
-                            onPress: () {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                builder: (_) => CustomDialog(
-                                  title:
-                                      "Are you sure you have reached the mechanic before you proceed with further payment?",
-                                  onPress: () {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      CupertinoPageRoute(
-                                        builder: (context) => PayMechanicPage(
-                                          mechanic: widget.mechanic,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  includeHeader: true,
+                        jobVisibility
+                            ? CustomButton(
+                                title: "Create Job",
+                                onPress: () {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    builder: (_) => CustomDialog(
+                                      title:
+                                          "Are you sure you have reached the mechanic before you proceed with further payment?",
+                                      onClicked: () {
+                                        Navigator.pop(context);
+                                        Navigator.push(
+                                          context,
+                                          CupertinoPageRoute(
+                                            builder: (context) =>
+                                                PayMechanicPage(
+                                              mechanic: widget.mechanic,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      includeHeader: true,
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.done,
+                                  color: Colors.white,
                                 ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.done,
-                              color: Colors.white,
-                            ),
-                            iconLeft: false,
-                          ),
-                          visible: jobVisibility,
-                        )
+                                iconLeft: false,
+                              )
+                            : Container()
                       ],
                     ),
                   ],

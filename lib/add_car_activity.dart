@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -143,7 +142,7 @@ class _AddCarActivityState extends State<AddCarActivity>
                                   return;
                                 }
 
-                                carsReference.child(_randomString()).set({
+                                carsReference.child(randomString()).set({
                                   'car_brand': _carMake.text,
                                   'car_model': _carModel.text,
                                   'car_date': _carDate.text,
@@ -190,15 +189,4 @@ class _AddCarActivityState extends State<AddCarActivity>
       ),
     );
   }
-}
-
-const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-String _randomString() {
-  Random rnd = new Random(new DateTime.now().millisecondsSinceEpoch);
-  String result = "";
-  for (var i = 0; i < 12; i++) {
-    result += chars[rnd.nextInt(chars.length)];
-  }
-  return result;
 }

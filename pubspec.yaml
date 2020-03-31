@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   shared_preferences:
   cupertino_icons: ^0.1.2
+
   image_picker: #TODO configure for iOS later
   google_maps_flutter: ^0.5.24+1 #TODO configure for iOS later
   firebase_database:
@@ -23,6 +24,9 @@ dependencies:
   geolocator: ^5.3.0 #TODO configure the iOS version later
   geocoder: ^0.2.1
   provider:
+  intl: ^0.16.1
+  flutter_spinkit: ^4.1.2
+  smooth_star_rating:
 
 dev_dependencies:
   flutter_test:

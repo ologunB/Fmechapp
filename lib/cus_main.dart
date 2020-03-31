@@ -182,7 +182,7 @@ class _CusMainPageState extends State<CusMainPage> {
                       barrierDismissible: true,
                       builder: (_) => CustomDialog(
                         title: "Are you sure you want to log out?",
-                        onPress: () {
+                        onClicked: () {
                           Navigator.pop(context);
                           Navigator.of(context).pushReplacement(
                             CupertinoPageRoute(

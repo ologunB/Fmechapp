@@ -102,6 +102,7 @@ class _EachServiceState extends State<EachService> {
             String tempDescription = dATA[key]['Description'];
             String tempImage = dATA[key]['Image Url'];
             String tempMechUid = dATA[key]['Mech Uid'];
+            String tempRating = dATA[key]['Rating'];
             var tempLongPos =
                 double.parse(dATA[key]['LOc Longitude'].toString());
             var tempLatPos = double.parse(dATA[key]['Loc Latitude'].toString());
@@ -121,7 +122,8 @@ class _EachServiceState extends State<EachService> {
                 specs: specs,
                 categories: cat,
                 mLat: tempLatPos,
-                mLong: tempLongPos));
+                mLong: tempLongPos,
+                rating: tempRating));
           }
 
           mechList = filteredByService(widget.title);

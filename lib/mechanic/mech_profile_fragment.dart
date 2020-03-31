@@ -19,13 +19,12 @@ class MechProfileFragment extends StatefulWidget {
   _MechProfileFragmentState createState() => _MechProfileFragmentState();
 }
 
-var rootRef = FirebaseDatabase.instance.reference();
-
 class _MechProfileFragmentState extends State<MechProfileFragment>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   File _mainPicture, _previous1, _previous2;
+  var rootRef = FirebaseDatabase.instance.reference();
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -349,7 +348,7 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                             padding: const EdgeInsets.all(8.0),
                             child: CustomButton(
                               title: "   Update   ",
-                              onPress: () {
+                              onPress: () async {
                                 if (phoneNo.text.toString().isEmpty) {
                                   showEmptyToast("Phone Number", context);
                                   return;

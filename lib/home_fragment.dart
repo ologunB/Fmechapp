@@ -15,7 +15,7 @@ class HomeFragment extends StatefulWidget {
 }
 
 class EachMechanic {
-  String id,
+  final String id,
       name,
       locality,
       descrpt,

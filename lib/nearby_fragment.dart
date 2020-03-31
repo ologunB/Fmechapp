@@ -106,6 +106,8 @@ class _NearbyFState extends State<NearbyF> {
             String tempLocality = dATA[key]['Locality'];
             String tempDescription = dATA[key]['Description'];
             String tempImage = dATA[key]['Image Url'];
+            String tempRating = dATA[key]['Rating'];
+
             String tempMechUid = dATA[key]['Mech Uid'];
             var tempLongPos =
                 double.parse(dATA[key]['LOc Longitude'].toString());
@@ -124,6 +126,7 @@ class _NearbyFState extends State<NearbyF> {
                 image: tempImage,
                 specs: specs,
                 categories: cat,
+                rating: tempRating,
                 mLat: tempLatPos,
                 mLong: tempLongPos));
           }

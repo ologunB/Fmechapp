@@ -154,7 +154,7 @@ class _ListViewNoteState extends State<MyGarage>
                                             builder: (_) => CustomDialog(
                                               title:
                                                   "Are you sure you want to remove the car from garage?",
-                                              onPress: () {
+                                              onClicked: () {
                                                 Navigator.pop(context);
                                                 carsReference
                                                     .child(items[index].id)

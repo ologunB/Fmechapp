@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:mechapp/change_password_fragment.dart';
 import 'package:mechapp/contact_us_fragment.dart';
 import 'package:mechapp/help_fragment.dart';
-import 'package:mechapp/jobs_fragment.dart';
 import 'package:mechapp/libraries/custom_dialog.dart';
 import 'package:mechapp/log_in.dart';
 import 'package:mechapp/mechanic/mech_profile_fragment.dart';
@@ -13,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../libraries/drawerbehavior.dart';
 import 'mech_home_fragment.dart';
+import 'mech_jobs_fragment.dart';
 
 class MechMainPage extends StatefulWidget {
   @override
@@ -61,7 +61,7 @@ class _MechMainPageState extends State<MechMainPage> {
   final List<Widget> pages = [
     MechHomeFragment(),
     MechProfileFragment(),
-    MyJobsF(),
+    MechJobsF(),
     NotificationF(),
     HelpF(),
     ContactUsF()
@@ -225,7 +225,7 @@ class _MechMainPageState extends State<MechMainPage> {
                       barrierDismissible: true,
                       builder: (_) => CustomDialog(
                         title: "Are you sure you want to log out?",
-                        onPress: () {
+                        onClicked: () {
                           Navigator.pop(context);
                           Navigator.of(context).pushReplacement(
                             CupertinoPageRoute(
