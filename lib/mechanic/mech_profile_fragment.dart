@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mechapp/dropdown_noti_cate.dart';
-import 'package:mechapp/header_image.dart';
 import 'package:mechapp/libraries/custom_button.dart';
 import 'package:mechapp/libraries/toast.dart';
+import 'package:mechapp/select_image.dart';
 
 import '../log_in.dart';
 import '../utils/type_constants.dart';
@@ -25,30 +23,6 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
   bool get wantKeepAlive => true;
   File _mainPicture, _previous1, _previous2;
   var rootRef = FirebaseDatabase.instance.reference();
-
-  Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      _mainPicture = image;
-    });
-  }
-
-  Future getPre1() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      _previous1 = image;
-    });
-  }
-
-  Future getPre2() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      _previous2 = image;
-    });
-  }
 
   Map dATA = {};
 
@@ -159,7 +133,11 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          HeaderImage(profileImageUrl),
+                          SelectImage(
+                            url: profileImageUrl,
+                            defaultUrl: "assets/images/engineer.png",
+                            image: _mainPicture,
+                          ),
                           NotiAndCategory(specifiC, specBool, tempCategoryBool,
                               "Specifications", specifyList),
                           NotiAndCategory(categoryC, categoryBool,
@@ -257,55 +235,17 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: InkWell(
-                                    onTap: () {
-                                      getPre1();
-                                    },
-                                    /*   child: _previous1 == null
-                                        ? Image(
-                                            image: AssetImage(
-                                                "assets/images/photo.png"),
-                                            height: 100,
-                                            fit: BoxFit.contain)
-                                        : Image.file(_previous1,
-                                            height: 100, fit: BoxFit.contain), */
-                                    child: CachedNetworkImage(
-                                      imageUrl: pre1image,
-                                      height: 40,
-                                      width: 40,
-                                      placeholder: (context, url) => Image(
-                                          image: AssetImage(
-                                              "assets/images/photo.png"),
-                                          height: 100,
-                                          fit: BoxFit.contain),
-                                      errorWidget: (context, url, error) =>
-                                          Image(
-                                              image: AssetImage(
-                                                  "assets/images/photo.png"),
-                                              height: 100,
-                                              fit: BoxFit.contain),
-                                    ),
-                                  ),
+                                child: SelectImage(
+                                  url: pre1image,
+                                  defaultUrl: "assets/images/photo.png",
+                                  image: _previous1,
                                 ),
                               ),
                               Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: InkWell(
-                                    onTap: () {
-                                      getPre2();
-                                    },
-                                    child: _previous2 == null
-                                        ? Image(
-                                            image: AssetImage(
-                                                "assets/images/photo.png"),
-                                            height: 100,
-                                            fit: BoxFit.contain)
-                                        : Image.file(_previous2,
-                                            height: 100, fit: BoxFit.contain),
-                                  ),
+                                child: SelectImage(
+                                  url: pre2image,
+                                  defaultUrl: "assets/images/photo.png",
+                                  image: _previous2,
                                 ),
                               ),
                             ],

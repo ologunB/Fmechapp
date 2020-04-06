@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 String mUID, mEmail, mName, userType;
 
+Color primaryColor = Color.fromARGB(255, 22, 58, 78);
 Widget emptyList(String typeOf) {
   return Container(
     height: double.infinity,

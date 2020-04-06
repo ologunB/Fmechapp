@@ -120,103 +120,140 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(18.0),
-      child: Center(
-        child: Card(
-          elevation: 5,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 25.0),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CupertinoTextField(
-                              //decoration: InputDecoration(hintText: "Email"),
-                              controller: _inEmail,
-                              placeholder: "Email",
-                              placeholderStyle:
-                                  TextStyle(fontWeight: FontWeight.w400),
+        padding: const EdgeInsets.all(18.0),
+        child: Center(
+            child: Card(
+                elevation: 5,
+                child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 25.0),
+                    child: SingleChildScrollView(
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: <
+                                Widget>[
+                      Container(
+                          child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CupertinoTextField(
+                                        //decoration: InputDecoration(hintText: "Email"),
+                                        controller: _inEmail,
+                                        placeholder: "Email",
+                                        placeholderStyle: TextStyle(
+                                            fontWeight: FontWeight.w400),
 
-                              keyboardType: TextInputType.emailAddress,
-                              padding: EdgeInsets.all(10),
-                              onChanged: (String e) {
-                                setState(() {
-                                  e = inEmail;
-                                });
-                              },
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.black),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CupertinoTextField(
-                              //decoration: InputDecoration(hintText: "Password"),
-                              controller: _inPass,
-                              placeholder: "Password",
-                              padding: EdgeInsets.all(10),
-                              placeholderStyle:
-                                  TextStyle(fontWeight: FontWeight.w400),
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        padding: EdgeInsets.all(10),
+                                        onChanged: (String e) {
+                                          setState(() {
+                                            e = inEmail;
+                                          });
+                                        },
+                                        style: TextStyle(
+                                            fontSize: 20, color: Colors.black),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CupertinoTextField(
+                                        //decoration: InputDecoration(hintText: "Password"),
+                                        controller: _inPass,
+                                        placeholder: "Password",
+                                        padding: EdgeInsets.all(10),
+                                        placeholderStyle: TextStyle(
+                                            fontWeight: FontWeight.w400),
 
-                              obscureText: true,
-                              onChanged: (String e) {
-                                setState(() {
-                                  e = inPass;
-                                });
-                              },
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.black),
-                            ),
-                          ),
-                          MaterialButton(
-                            onPressed: () {
-                              showDialog(
-                                barrierDismissible: true,
-                                context: context,
-                                builder: (_) => CupertinoAlertDialog(
-                                  title: Column(
-                                    children: <Widget>[
-                                      Text("Enter Email"),
-                                    ],
-                                  ),
-                                  content: CupertinoTextField(
-                                    //decoration: InputDecoration(hintText: "Password"),
-                                    controller: _inForgotPass,
-                                    placeholder: "Email",
-                                    padding: EdgeInsets.all(10),
-                                    keyboardType: TextInputType.emailAddress,
-                                    placeholderStyle:
-                                        TextStyle(fontWeight: FontWeight.w300),
+                                        obscureText: true,
+                                        onChanged: (String e) {
+                                          setState(() {
+                                            e = inPass;
+                                          });
+                                        },
+                                        style: TextStyle(
+                                            fontSize: 20, color: Colors.black),
+                                      ),
+                                    ),
+                                    MaterialButton(
+                                      onPressed: () {
+                                        showDialog(
+                                          barrierDismissible: true,
+                                          context: context,
+                                          builder: (_) => CupertinoAlertDialog(
+                                            title: Column(
+                                              children: <Widget>[
+                                                Text("Enter Email"),
+                                              ],
+                                            ),
+                                            content: CupertinoTextField(
+                                              //decoration: InputDecoration(hintText: "Password"),
+                                              controller: _inForgotPass,
+                                              placeholder: "Email",
+                                              padding: EdgeInsets.all(10),
+                                              keyboardType:
+                                                  TextInputType.emailAddress,
+                                              placeholderStyle: TextStyle(
+                                                  fontWeight: FontWeight.w300),
 
-                                    onChanged: (String e) {
-                                      setState(() {
-                                        e = inForgotPass;
-                                      });
-                                    },
-                                    style: TextStyle(
-                                        fontSize: 20, color: Colors.black),
-                                  ),
-                                  actions: <Widget>[
-                                    Center(
-                                      child: CustomButton(
-                                        title: "Reset Password",
-                                        onPress: () {
-                                          /*@override
+                                              onChanged: (String e) {
+                                                setState(() {
+                                                  e = inForgotPass;
+                                                });
+                                              },
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.black),
+                                            ),
+                                            actions: <Widget>[
+                                              Center(
+                                                child: CustomButton(
+                                                  title: "Reset Password",
+                                                  onPress: () {
+                                                    /*@override
                                           Future<void> resetPassword(
                                               String email) async {
                                             await _firebaseAuth
                                                 .sendPasswordResetEmail(
                                                     email: email);
                                           }*/
+                                                  },
+                                                  icon: Icon(
+                                                    Icons.arrow_forward,
+                                                    color: Colors.white,
+                                                  ),
+                                                  iconLeft: false,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                            color: Colors.indigo,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    Center(
+                                      child: CustomButton(
+                                        title: "  SIGN IN  ",
+                                        onPress: () {
+                                          if (_inEmail.text
+                                              .toString()
+                                              .isEmpty) {
+                                            showEmptyToast("Email", context);
+                                          } else if (_inPass.text
+                                              .toString()
+                                              .isEmpty) {
+                                            showEmptyToast("Password", context);
+                                          }
+                                          //putInDB("from The DB", " ", " ");
                                         },
                                         icon: Icon(
                                           Icons.arrow_forward,
@@ -225,97 +262,57 @@ class _SignInPageState extends State<SignInPage> {
                                         iconLeft: false,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                            child: Text(
-                              "Forgot Password?",
-                              style: TextStyle(
-                                  color: Colors.indigo,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          Center(
-                            child: CustomButton(
-                              title: "  SIGN IN  ",
-                              onPress: () {
-                                if (_inEmail.text.toString().isEmpty) {
-                                  showEmptyToast("Email", context);
-                                } else if (_inPass.text.toString().isEmpty) {
-                                  showEmptyToast("Password", context);
-                                }
-                                //putInDB("from The DB", " ", " ");
-                              },
-                              icon: Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                              ),
-                              iconLeft: false,
-                            ),
-                          ),
-                          Center(
-                            child: CustomButton(
-                              title: "  SIGN IN as mech  ",
-                              onPress: () {
-                                Navigator.of(context).pushReplacement(
-                                  CupertinoPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) {
-                                      return MechMainPage();
-                                    },
-                                  ),
-                                );
-                                putInDB(
-                                    "Mechanic",
-                                    "AcDpulpJ2XV2a9AQEj6IoNxCHc52",
-                                    "mechtest@gmail.com",
-                                    "mechanic Name");
-                              },
-                              icon: Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                              ),
-                              iconLeft: false,
-                            ),
-                          ),
-                          Center(
-                            child: CustomButton(
-                              title: "  SIGN IN as cus  ",
-                              onPress: () {
-                                Navigator.of(context).pushReplacement(
-                                  CupertinoPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) {
-                                      return CusMainPage();
-                                    },
-                                  ),
-                                );
-                                putInDB(
-                                    "Customer",
-                                    "c7a2dRWq1eShKhhCBVzoiyys6j33",
-                                    "customertest@gmail.com",
-                                    "customer Name");
-                              },
-                              icon: Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                              ),
-                              iconLeft: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+                                    Center(
+                                      child: CustomButton(
+                                        title: "  SIGN IN as mech  ",
+                                        onPress: () {
+                                          Navigator.of(context).pushReplacement(
+                                            CupertinoPageRoute(
+                                              fullscreenDialog: true,
+                                              builder: (context) {
+                                                return MechMainPage();
+                                              },
+                                            ),
+                                          );
+                                          putInDB(
+                                              "Mechanic",
+                                              "25ji5ETsoIUPQaPlE4MnsEizv9x2",
+                                              "mechtest@gmail.com",
+                                              "mechanic Name");
+                                        },
+                                        icon: Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white,
+                                        ),
+                                        iconLeft: false,
+                                      ),
+                                    ),
+                                    Center(
+                                        child: CustomButton(
+                                      title: "  SIGN IN as cus  ",
+                                      onPress: () {
+                                        Navigator.of(context).pushReplacement(
+                                          CupertinoPageRoute(
+                                            fullscreenDialog: true,
+                                            builder: (context) {
+                                              return CusMainPage();
+                                            },
+                                          ),
+                                        );
+                                        putInDB(
+                                            "Customer",
+                                            "IHsWCYGGNAQnOVzPJVakAJkl6ro2",
+                                            "customertest@gmail.com",
+                                            "customer Name");
+                                      },
+                                      icon: Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                      ),
+                                      iconLeft: false,
+                                    ))
+                                  ])))
+                    ]))))));
   }
 }
 
@@ -526,7 +523,6 @@ class _MechSignUpState extends State<MechSignUp> {
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
-
     TextEditingController _upSpecify = TextEditingController();
     TextEditingController _upCategory = TextEditingController();
     TextEditingController _upName = TextEditingController();

@@ -5,7 +5,9 @@ import 'package:mechapp/contact_us_fragment.dart';
 import 'package:mechapp/help_fragment.dart';
 import 'package:mechapp/libraries/custom_dialog.dart';
 import 'package:mechapp/log_in.dart';
+import 'package:mechapp/mechanic/mech_make_payment.dart';
 import 'package:mechapp/mechanic/mech_profile_fragment.dart';
+import 'package:mechapp/mechanic/mech_request_payment.dart';
 import 'package:mechapp/notifications_fragment.dart';
 import 'package:mechapp/utils/type_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,6 +50,16 @@ class _MechMainPageState extends State<MechMainPage> {
         icon: IconData(0xe932, fontFamily: 'MaterialIcons'),
       ),
       new MenuItem(
+        id: 'Make Payment',
+        title: 'Make Payment',
+        icon: Icons.payment,
+      ),
+      new MenuItem(
+        id: 'Request Payment',
+        title: 'Request Payment',
+        icon: Icons.assignment_return,
+      ),
+      new MenuItem(
         id: 'Contact Us',
         title: 'Contact Us',
         icon: IconData(0xe0d0, fontFamily: 'MaterialIcons'),
@@ -64,6 +76,8 @@ class _MechMainPageState extends State<MechMainPage> {
     MechJobsF(),
     NotificationF(),
     HelpF(),
+    MechMakePayment(),
+    MechRequestPayment(),
     ContactUsF()
   ];
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -346,10 +360,20 @@ class _MechMainPageState extends State<MechMainPage> {
               title = selectedMenuItemId;
               currentWidget = pages[4];
             });
-          } else if (itemId == "Contact Us") {
+          } else if (itemId == "Make Payment") {
             setState(() {
               title = selectedMenuItemId;
               currentWidget = pages[5];
+            });
+          } else if (itemId == "Request Payment") {
+            setState(() {
+              title = selectedMenuItemId;
+              currentWidget = pages[6];
+            });
+          } else if (itemId == "Contact Us") {
+            setState(() {
+              title = selectedMenuItemId;
+              currentWidget = pages[7];
             });
           }
         },

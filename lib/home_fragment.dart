@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -79,30 +80,32 @@ class _HomeFragmentState extends State<HomeFragment> {
     });
   }
 
-/**
+  List<EachMechanic> mechList = [];
+  bool showService = true;
+
   Future<List<EachMechanic>> getAllMechanics() async {
     DatabaseReference dataRef =
         FirebaseDatabase.instance.reference().child("Mechanic Collection");
 
     await dataRef.once().then((snapshot) {
-      var KEYS = snapshot.value.keys;
-      var DATA = snapshot.value;
+      var kEYS = snapshot.value.keys;
+      var dATA = snapshot.value;
 
       mechList.clear();
-      for (var index in KEYS) {
-        String tempName = DATA[index]['Company Name'];
-        String tempPhoneNumber = DATA[index]['Phone Number'];
-        String tempStreetName = DATA[index]['Street Name'];
-        String tempCity = DATA[index]['City'];
-        String tempLocality = DATA[index]['Locality'];
-        String tempDescription = DATA[index]['Description'];
-        String tempImage = DATA[index]['Image Url'];
-        String tempMechUid = DATA[index]['Mech Uid'];
-        String tempLongPos = DATA[index]['LOc Longitude'];
-        String tempLatPos = DATA[index]['LOc Latitude'];
+      for (var index in kEYS) {
+        String tempName = dATA[index]['Company Name'];
+        String tempPhoneNumber = dATA[index]['Phone Number'];
+        String tempStreetName = dATA[index]['Street Name'];
+        String tempCity = dATA[index]['City'];
+        String tempLocality = dATA[index]['Locality'];
+        String tempDescription = dATA[index]['Description'];
+        String tempImage = dATA[index]['Image Url'];
+        String tempMechUid = dATA[index]['Mech Uid'];
+        String tempLongPos = dATA[index]['LOc Longitude'];
+        String tempLatPos = dATA[index]['LOc Latitude'];
 
-        List cat = DATA[index]["Categories"];
-        List specs = DATA[index]["Specifications"];
+        List cat = dATA[index]["Categories"];
+        List specs = dATA[index]["Specifications"];
         mechList.add(EachMechanic(
             id: tempMechUid,
             name: tempName,
@@ -128,7 +131,20 @@ class _HomeFragmentState extends State<HomeFragment> {
     }
     return _tempList;
   }
-**/
+
+  void onSearchMechanic(String val) {
+    val = val.trim();
+    if (val.isNotEmpty) {
+      setState(() {
+        showService = false;
+      });
+    } else {
+      setState(() {
+        showService = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
@@ -223,7 +239,7 @@ class _HomeFragmentState extends State<HomeFragment> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,
@@ -233,7 +249,7 @@ class _HomeFragmentState extends State<HomeFragment> {
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.all(5.0),
+                    padding: EdgeInsets.all(5.0),
                     child: Icon(
                       Icons.search,
                       color: primaryColor,
@@ -241,9 +257,10 @@ class _HomeFragmentState extends State<HomeFragment> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(5.0),
+                      padding: EdgeInsets.all(5.0),
                       child: CupertinoTextField(
                         placeholder: "Search Mechanics...",
+                        onChanged: onSearchMechanic,
                       ),
                     ),
                   )
@@ -259,62 +276,65 @@ class _HomeFragmentState extends State<HomeFragment> {
                   fontSize: 20, color: Colors.red, fontWeight: FontWeight.w700),
             ),
           ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black12)],
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                child: GridView.builder(
-                    shrinkWrap: true,
-                    itemCount: httpServicesList.length,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                              builder: (context) => EachService(
-                                title: httpServicesList[index].typeTitle,
+          Visibility(
+            visible: showService,
+            child: Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black12)],
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  child: GridView.builder(
+                      shrinkWrap: true,
+                      itemCount: httpServicesList.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => EachService(
+                                  title: httpServicesList[index].typeTitle,
+                                ),
                               ),
+                            );
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.all(0.0),
+                            child: Column(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        httpServicesList[index].typeImageUrl,
+                                    height: 40,
+                                    width: 40,
+                                    placeholder: (context, url) =>
+                                        CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
+                                  ),
+                                ),
+                                Center(
+                                  child: Text(
+                                    httpServicesList[index].typeTitle,
+                                    style: TextStyle(
+                                        fontSize: 20, color: primaryColor),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(0.0),
-                          child: Column(
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      httpServicesList[index].typeImageUrl,
-                                  height: 40,
-                                  width: 40,
-                                  placeholder: (context, url) =>
-                                      CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                ),
-                              ),
-                              Center(
-                                child: Text(
-                                  httpServicesList[index].typeTitle,
-                                  style: TextStyle(
-                                      fontSize: 20, color: primaryColor),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
-                      );
-                    },
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3)),
+                        );
+                      },
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3)),
+                ),
               ),
             ),
           )

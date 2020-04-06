@@ -91,9 +91,6 @@ class _MyJobsFState extends State<MyJobsF> {
         stream: _getJobs(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            String status = "Confirm Job?";
-            Color statusColor = Colors.blue;
-
             return list.length == 0
                 ? emptyList("Jobs")
                 : Container(
@@ -103,22 +100,6 @@ class _MyJobsFState extends State<MyJobsF> {
                       shrinkWrap: true,
                       itemCount: list.length,
                       itemBuilder: (context, index) {
-                        if (list[index].cusStatus == "Confirmed" &&
-                            list[index].mechStatus == "Confirmed") {
-                          if (list[index].hasReviewed == "True") {
-                            status = "COMPLETED!";
-                            statusColor = Colors.black38;
-                          } else {
-                            status = "RATE MECH.";
-                            statusColor = Colors.teal;
-                          }
-                        } else if (list[index].cusStatus == "Confirmed") {
-                          status = "PENDING!";
-                          statusColor = Colors.red;
-                        } else {
-                          status = "Confirm Job?";
-                          statusColor = Colors.blue;
-                        }
                         return Center(
                           child: Card(
                             child: Padding(
@@ -178,10 +159,7 @@ class _MyJobsFState extends State<MyJobsF> {
                                           fontSize: 22, color: Colors.black),
                                     ),
                                   ),
-                                  ConfirmButton(
-                                      index: index,
-                                      status: status,
-                                      statusColor: statusColor),
+                                  ConfirmButton(index: index),
                                 ],
                               ),
                             ),
@@ -209,328 +187,348 @@ class _MyJobsFState extends State<MyJobsF> {
   }
 }
 
-void confirmJob(BuildContext context, int index) async {
-  String otherUID = list[index].otherPersonUID;
-  String transactID = list[index].transactID;
-  String amount = list[index].amount;
-  String carType = list[index].carType;
-  String nameOfMech = list[index].otherPersonName;
-
-  try {
-    int aa = int.parse(a_) + 1; // Total Jobs
-    int bb = int.parse(b_) + int.parse(amount); // Total Amount
-    int cc = int.parse(c_) - 1; // Pending Jobs
-    int dd = int.parse(d_) - int.parse(amount); // Pending Amount
-    int ee = int.parse(e_) + 1; // Pay pending Jobs
-    int ff = int.parse(f_) + int.parse(amount); // Pay pending Amount
-
-    final Map<String, Object> updateJobs = Map();
-    updateJobs.putIfAbsent("Total Job", () => aa.toString());
-    updateJobs.putIfAbsent("Total Amount", () => bb.toString());
-    updateJobs.putIfAbsent("Pending Job", () => cc.toString());
-    updateJobs.putIfAbsent("Pending Amount", () => dd.toString());
-    updateJobs.putIfAbsent("Pay pending Job", () => ee.toString());
-    updateJobs.putIfAbsent("Pay pending Amount", () => ff.toString());
-
-    String made = "Your payment of ₦" +
-        amount +
-        " to " +
-        nameOfMech +
-        " for " +
-        carType +
-        " has been confirmed by you. Thanks for using FABAT";
-
-    String received = "You have a confirmed payment of ₦" +
-        amount +
-        " by " +
-        mName +
-        " and shall be available soonest. Thanks for using FABAT";
-
-    final Map<String, String> sentMessage = Map();
-    sentMessage.putIfAbsent("notification_message", () => made);
-    sentMessage.putIfAbsent("notification_time", () => thePresentTime());
-
-    final Map<String, String> receivedMessage = Map();
-    receivedMessage.putIfAbsent("notification_message", () => received);
-    receivedMessage.putIfAbsent("notification_time", () => thePresentTime());
-
-    Map<String, Object> valuesToMech = Map();
-    valuesToMech.putIfAbsent("Trans Confirmation", () => "Confirmed");
-
-    final Map<String, Object> valuesToCustomer = Map();
-    valuesToCustomer.putIfAbsent("Trans Confirmation", () => "Confirmed");
-
-    rootRef
-        .child("Jobs Collection")
-        .child("Mechanic")
-        .child(otherUID)
-        .child(transactID)
-        .update(valuesToMech);
-
-    rootRef
-        .child("Notification Collection")
-        .child("Mechanic")
-        .child(otherUID)
-        .child(transactID)
-        .set(receivedMessage);
-
-    rootRef
-        .child("Jobs Collection")
-        .child("Customer")
-        .child(mUID)
-        .child(transactID)
-        .update(valuesToCustomer);
-    rootRef
-        .child("Notification Collection")
-        .child("Customer")
-        .child(mUID)
-        .push()
-        .set(sentMessage);
-    rootRef.child("All Jobs Collection").child(otherUID).update(updateJobs);
-  } catch (exp) {
-    showToast("Getting values. Try again...", context);
-  }
-}
-
-void rateMechanic(BuildContext context, int index, String reviewMessage,
-    double givenRate) async {
-  final Map<String, String> review = Map();
-  review.putIfAbsent("review_message", () => reviewMessage);
-  review.putIfAbsent("review_time", () => thePresentTime());
-
-  final Map<String, Object> cusVal = Map();
-  cusVal.putIfAbsent("hasReviewed", () => "True");
-
-  try {
-    double _rate = double.parse(preRating);
-    int _review = int.parse(preReview);
-
-    int presentReview = _review + 1;
-    String presentRate =
-        (((_rate * _review) + givenRate) / presentReview).toString();
-    final Map<String, Object> updateMech = Map();
-    updateMech.putIfAbsent("Rating", () => presentRate.substring(0, 3));
-    updateMech.putIfAbsent("Reviews", () => presentReview.toString());
-
-    await rootRef
-        .child("Mechanic Collection")
-        .child(selectedUID)
-        .update(updateMech);
-
-    await rootRef
-        .child("Mechanic Reviews")
-        .child("Mechanic")
-        .child(selectedUID)
-        .child(randomString())
-        .set(review);
-    await rootRef
-        .child("Jobs Collection")
-        .child("Customer")
-        .child(mUID)
-        .child(list[index].transactID)
-        .update(cusVal);
-  } catch (exp) {
-    showToast("Getting data, Try again", context);
-  }
-}
-
 class ConfirmButton extends StatefulWidget {
   final int index;
-  String status;
-  Color statusColor;
-  ConfirmButton({this.index, this.statusColor, this.status});
+  ConfirmButton({this.index});
   @override
   _ConfirmButtonState createState() => _ConfirmButtonState();
 }
 
 class _ConfirmButtonState extends State<ConfirmButton> {
+  String status = "Confirm Job?";
+  Color statusColor = Colors.blue;
+  void confirmJob(int index, aSetState) async {
+    String otherUID = list[index].otherPersonUID;
+    String transactID = list[index].transactID;
+    String amount = list[index].amount;
+    String carType = list[index].carType;
+    String nameOfMech = list[index].otherPersonName;
+
+    try {
+      int aa = int.parse(a_) + 1; // Total Jobs
+      int bb = int.parse(b_) + int.parse(amount); // Total Amount
+      int cc = int.parse(c_) - 1; // Pending Jobs
+      int dd = int.parse(d_) - int.parse(amount); // Pending Amount
+      int ee = int.parse(e_) + 1; // Pay pending Jobs
+      int ff = int.parse(f_) + int.parse(amount); // Pay pending Amount
+
+      final Map<String, Object> updateJobs = Map();
+      updateJobs.putIfAbsent("Total Job", () => aa.toString());
+      updateJobs.putIfAbsent("Total Amount", () => bb.toString());
+      updateJobs.putIfAbsent("Pending Job", () => cc.toString());
+      updateJobs.putIfAbsent("Pending Amount", () => dd.toString());
+      updateJobs.putIfAbsent("Pay pending Job", () => ee.toString());
+      updateJobs.putIfAbsent("Pay pending Amount", () => ff.toString());
+
+      String made = "Your payment of ₦" +
+          amount +
+          " to " +
+          nameOfMech +
+          " for " +
+          carType +
+          " has been confirmed by you. Thanks for using FABAT";
+
+      String received = "You have a confirmed payment of ₦" +
+          amount +
+          " by " +
+          mName +
+          " and shall be available soonest. Thanks for using FABAT";
+
+      final Map<String, String> sentMessage = Map();
+      sentMessage.putIfAbsent("notification_message", () => made);
+      sentMessage.putIfAbsent("notification_time", () => thePresentTime());
+
+      final Map<String, String> receivedMessage = Map();
+      receivedMessage.putIfAbsent("notification_message", () => received);
+      receivedMessage.putIfAbsent("notification_time", () => thePresentTime());
+
+      Map<String, Object> valuesToMech = Map();
+      valuesToMech.putIfAbsent("Trans Confirmation", () => "Confirmed");
+
+      final Map<String, Object> valuesToCustomer = Map();
+      valuesToCustomer.putIfAbsent("Trans Confirmation", () => "Confirmed");
+
+      rootRef
+          .child("Jobs Collection")
+          .child("Mechanic")
+          .child(otherUID)
+          .child(transactID)
+          .update(valuesToMech);
+
+      rootRef
+          .child("Notification Collection")
+          .child("Mechanic")
+          .child(otherUID)
+          .child(transactID)
+          .set(receivedMessage);
+
+      rootRef
+          .child("Jobs Collection")
+          .child("Customer")
+          .child(mUID)
+          .child(transactID)
+          .update(valuesToCustomer);
+      rootRef
+          .child("Notification Collection")
+          .child("Customer")
+          .child(mUID)
+          .push()
+          .set(sentMessage);
+      rootRef.child("All Jobs Collection").child(otherUID).update(updateJobs);
+      aSetState(() {
+        bool isConfirmed = list[widget.index].mechStatus == "Confirmed";
+        status = isConfirmed ? "RATE MECH." : "PENDING!";
+        statusColor = isConfirmed ? Colors.teal : Colors.red;
+      });
+      Navigator.pop(context);
+      showToast("Confirmed", context);
+    } catch (exp) {
+      showToast("Getting values. Try again...", context);
+    }
+  }
+
+  void rateMechanic(
+      int index, String reviewMessage, double givenRate, aSetState) async {
+    final Map<String, String> review = Map();
+    review.putIfAbsent("review_message", () => reviewMessage);
+    review.putIfAbsent("review_time", () => thePresentTime());
+
+    final Map<String, Object> cusVal = Map();
+    cusVal.putIfAbsent("hasReviewed", () => "True");
+
+    try {
+      double _rate = double.parse(preRating);
+      int _review = int.parse(preReview);
+
+      int presentReview = _review + 1;
+      String presentRate =
+          (((_rate * _review) + givenRate) / presentReview).toString();
+      final Map<String, Object> updateMech = Map();
+      updateMech.putIfAbsent("Rating", () => presentRate.substring(0, 3));
+      updateMech.putIfAbsent("Reviews", () => presentReview.toString());
+
+      await rootRef
+          .child("Mechanic Collection")
+          .child(selectedUID)
+          .update(updateMech);
+
+      await rootRef
+          .child("Mechanic Reviews")
+          .child("Mechanic")
+          .child(selectedUID)
+          .child(randomString())
+          .set(review);
+      await rootRef
+          .child("Jobs Collection")
+          .child("Customer")
+          .child(mUID)
+          .child(list[index].transactID)
+          .update(cusVal);
+      aSetState(() {
+        status = "CONFIRMED!";
+        statusColor = Colors.black12;
+      });
+
+      Navigator.pop(context);
+      showToast("Review Submitted", context);
+    } catch (exp) {
+      showToast("Getting data, Try again", context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     TextEditingController _messageController = TextEditingController();
     double ratingNum = 3;
-    return Center(
-      child: RaisedButton(
-        color: widget.statusColor,
-        onPressed: () async {
-          selectedUID = list[widget.index].otherPersonUID;
+    if (list[widget.index].cusStatus == "Confirmed" &&
+        list[widget.index].mechStatus == "Confirmed") {
+      if (list[widget.index].hasReviewed == "True") {
+        status = "COMPLETED!";
+        statusColor = Colors.black38;
+      } else {
+        status = "RATE MECH.";
+        statusColor = Colors.teal;
+      }
+    } else if (list[widget.index].cusStatus == "Confirmed") {
+      status = "PENDING!";
+      statusColor = Colors.red;
+    } else {
+      status = "Confirm Job?";
+      statusColor = Colors.blue;
+    }
+    return StatefulBuilder(
+        builder: (context, _setState) => Center(
+              child: RaisedButton(
+                color: statusColor,
+                onPressed: () async {
+                  selectedUID = list[widget.index].otherPersonUID;
 
-          switch (widget.status) {
-            case "Confirm Job?":
-              {
-                rootRef
-                    .child("All Jobs Collection")
-                    .child(selectedUID)
-                    .once()
-                    .then((snapshot) => () {
-                          a_ = snapshot.value["Total Job"];
-                          b_ = snapshot.value["Total Amount"];
-                          c_ = snapshot.value["Pending Job"];
-                          d_ = snapshot.value["Pending Amount"];
-                          e_ = snapshot.value["Pay pending Job"];
-                          f_ = snapshot.value["Pay pending Amount"];
-                          g_ = snapshot.value["Completed Job"];
-                          h_ = snapshot.value["Completed Amount"];
+                  switch (status) {
+                    case "Confirm Job?":
+                      {
+                        await rootRef
+                            .child("All Jobs Collection")
+                            .child(selectedUID)
+                            .once()
+                            .then((snapshot) => () {
+                                  a_ = snapshot.value["Total Job"];
+                                  b_ = snapshot.value["Total Amount"];
+                                  c_ = snapshot.value["Pending Job"];
+                                  d_ = snapshot.value["Pending Amount"];
+                                  e_ = snapshot.value["Pay pending Job"];
+                                  f_ = snapshot.value["Pay pending Amount"];
+                                  g_ = snapshot.value["Completed Job"];
+                                  h_ = snapshot.value["Completed Amount"];
+                                });
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (_) => CustomDialog(
+                            title:
+                                "Are you sure you want to confirm the Mechanic?",
+                            onClicked: () {
+                              confirmJob(widget.index, _setState);
+                            },
+                            includeHeader: true,
+                          ),
+                        );
+                        break;
+                      }
+                    case "RATE MECH.":
+                      {
+                        await rootRef
+                            .child("Mechanic Collection")
+                            .child(selectedUID)
+                            .once()
+                            .then((snapshot) {
+                          preRating = snapshot.value["Rating"];
+                          preReview = snapshot.value["Reviews"];
                         });
-                showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (_) => CustomDialog(
-                    title: "Are you sure you want to confirm the Mechanic?",
-                    onClicked: () {
-                      confirmJob(context, widget.index);
-                      setState(() {
-                        bool isConfirmed =
-                            list[widget.index].mechStatus == "Confirmed";
-                        widget.status = isConfirmed ? "RATE MECH." : "PENDING!";
-                        widget.statusColor =
-                            isConfirmed ? Colors.teal : Colors.red;
-                      });
-                      Navigator.pop(context);
-                      showToast("Confirmed", context);
-                    },
-                    includeHeader: true,
-                  ),
-                );
-                break;
-              }
-            case "RATE MECH.":
-              {
-                await rootRef
-                    .child("Mechanic Collection")
-                    .child(selectedUID)
-                    .once()
-                    .then((snapshot) {
-                  preRating = snapshot.value["Rating"];
-                  preReview = snapshot.value["Reviews"];
-                });
-                showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (_) => CupertinoAlertDialog(
-                    title: Text("Rate your dealing with " +
-                        list[widget.index].otherPersonName),
-                    content: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        SizedBox(height: 10),
-                        Text(
-                          "Please select some stars and give some feedback",
-                          style: TextStyle(fontSize: 20, color: Colors.black),
-                        ),
-                        SizedBox(height: 10),
-                        StatefulBuilder(
-                          builder: (context, _setState) => SmoothStarRating(
-                              allowHalfRating: true,
-                              onRatingChanged: (val) {
-                                _setState(() {
-                                  ratingNum = val;
-                                });
-                              },
-                              starCount: 5,
-                              rating: ratingNum,
-                              size: 40.0,
-                              filledIconData: Icons.star,
-                              halfFilledIconData: Icons.star_half,
-                              color: Colors.blue,
-                              borderColor: Colors.blue,
-                              spacing: 0.0),
-                        ),
-                        SizedBox(height: 10),
-                        CupertinoTextField(
-                          placeholder: "Type something here...",
-                          placeholderStyle:
-                              TextStyle(fontWeight: FontWeight.w400),
-                          padding: EdgeInsets.all(10),
-                          maxLines: 7,
-                          onChanged: (e) {
-                            setState(() {});
-                          },
-                          style: TextStyle(fontSize: 20, color: Colors.black),
-                          controller: _messageController,
-                        ),
-                      ],
-                    ),
-                    actions: <Widget>[
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(5.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(50),
-                                color: Colors.red),
-                            child: FlatButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                "NO",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white),
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (_) => CupertinoAlertDialog(
+                            title: Text("Rate your dealing with " +
+                                list[widget.index].otherPersonName),
+                            content: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                SizedBox(height: 10),
+                                Text(
+                                  "Please select some stars and give some feedback",
+                                  style: TextStyle(
+                                      fontSize: 20, color: Colors.black),
+                                ),
+                                SizedBox(height: 10),
+                                StatefulBuilder(
+                                  builder: (context, _setState) =>
+                                      SmoothStarRating(
+                                          allowHalfRating: true,
+                                          onRatingChanged: (val) {
+                                            _setState(() {
+                                              ratingNum = val;
+                                            });
+                                          },
+                                          starCount: 5,
+                                          rating: ratingNum,
+                                          size: 40.0,
+                                          filledIconData: Icons.star,
+                                          halfFilledIconData: Icons.star_half,
+                                          color: Colors.blue,
+                                          borderColor: Colors.blue,
+                                          spacing: 0.0),
+                                ),
+                                SizedBox(height: 10),
+                                CupertinoTextField(
+                                  placeholder: "Type something here...",
+                                  placeholderStyle:
+                                      TextStyle(fontWeight: FontWeight.w400),
+                                  padding: EdgeInsets.all(10),
+                                  maxLines: 7,
+                                  onChanged: (e) {
+                                    setState(() {});
+                                  },
+                                  style: TextStyle(
+                                      fontSize: 20, color: Colors.black),
+                                  controller: _messageController,
+                                ),
+                              ],
+                            ),
+                            actions: <Widget>[
+                              Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(5.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(50),
+                                        color: Colors.red),
+                                    child: FlatButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text(
+                                        "NO",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(5.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: Color.fromARGB(255, 22, 58, 78),
-                            ),
-                            child: FlatButton(
-                              onPressed: () {
-                                rateMechanic(
-                                    context,
-                                    widget.index,
-                                    _messageController.text == null
-                                        ? "No review"
-                                        : _messageController.text,
-                                    ratingNum);
-
-                                setState(() {
-                                  widget.status = "CONFIRMED!";
-                                  widget.statusColor = Colors.black12;
-                                });
-
-                                Navigator.pop(context);
-                                showToast("Review Submitted", context);
-                              },
-                              child: Text(
-                                "YES",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white),
+                              Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(5.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50),
+                                      color: Color.fromARGB(255, 22, 58, 78),
+                                    ),
+                                    child: FlatButton(
+                                      onPressed: () {
+                                        rateMechanic(
+                                            widget.index,
+                                            _messageController.text == null
+                                                ? "No review"
+                                                : _messageController.text,
+                                            ratingNum,
+                                            _setState);
+                                      },
+                                      child: Text(
+                                        "YES",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ],
+                        );
+                        break;
+                      }
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Text(
+                    status,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black),
                   ),
-                );
-                break;
-              }
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(6.0),
-          child: Text(
-            widget.status,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 20, fontWeight: FontWeight.w900, color: Colors.black),
-          ),
-        ),
-      ),
-    );
+                ),
+              ),
+            ));
   }
 }

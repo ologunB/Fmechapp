@@ -31,10 +31,9 @@ class MechJobsF extends StatefulWidget {
 }
 
 var rootRef = FirebaseDatabase.instance.reference();
+List<JobModel> list = [];
 
 class _MechJobsFState extends State<MechJobsF> {
-  List<JobModel> list = [];
-
   Stream<List<JobModel>> _getJobs() async* {
     DatabaseReference dataRef =
         rootRef.child("Jobs Collection").child(userType).child(mUID);
@@ -85,19 +84,6 @@ class _MechJobsFState extends State<MechJobsF> {
                       shrinkWrap: true,
                       itemCount: list.length,
                       itemBuilder: (context, index) {
-                        String status = "Confirm Job?";
-                        Color statusColor = Colors.blue;
-                        bool isEnabled = true;
-                        if (list[index].cusStatus == "Confirmed" &&
-                            list[index].mechStatus == "Confirmed") {
-                          status = "COMPLETED!";
-                          isEnabled = false;
-                          statusColor = Colors.black12;
-                        } else if (list[index].mechStatus == "Confirmed") {
-                          status = "PENDING!";
-                          isEnabled = false;
-                          statusColor = Colors.red;
-                        }
                         return Center(
                           child: Card(
                             child: Padding(
@@ -134,49 +120,7 @@ class _MechJobsFState extends State<MechJobsF> {
                                           fontSize: 22, color: Colors.black),
                                     ),
                                   ),
-                                  Center(
-                                    child: RaisedButton(
-                                      color: statusColor,
-                                      onPressed: isEnabled
-                                          ? () {
-                                              showDialog(
-                                                context: context,
-                                                barrierDismissible: true,
-                                                builder: (_) => CustomDialog(
-                                                  title:
-                                                      "Are you sure you want to confirm the Customer?",
-                                                  onClicked: () {
-                                                    confirmJob(index);
-                                                    setState(() {
-                                                      bool isConfirmed =
-                                                          list[index]
-                                                                  .cusStatus ==
-                                                              "Confirmed";
-                                                      status = isConfirmed
-                                                          ? "COMPLETED!"
-                                                          : "PENDING!";
-                                                      statusColor = isConfirmed
-                                                          ? Colors.black12
-                                                          : Colors.red;
-                                                    });
-                                                  },
-                                                  includeHeader: true,
-                                                ),
-                                              );
-                                            }
-                                          : () {},
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(6.0),
-                                        child: Text(
-                                          status,
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  ButtonConfirm(index: index),
                                 ],
                               ),
                             ),
@@ -194,7 +138,29 @@ class _MechJobsFState extends State<MechJobsF> {
     );
   }
 
-  void confirmJob(int index) async {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: double.infinity,
+      color: Color(0xb090A1AE),
+      child: _buildFutureBuilder(),
+    );
+  }
+}
+
+class ButtonConfirm extends StatefulWidget {
+  final int index;
+
+  ButtonConfirm({this.index});
+
+  @override
+  _ButtonConfirmState createState() => _ButtonConfirmState();
+}
+
+class _ButtonConfirmState extends State<ButtonConfirm> {
+  String status = "Confirm Job?";
+  Color statusColor = Colors.blue;
+  void confirmJob(int index, asetState) async {
     String received =
         "Payment has been confirmed by you. Thanks for using FABAT";
 
@@ -214,7 +180,6 @@ class _MechJobsFState extends State<MechJobsF> {
     Map<String, Object> valuesToCustomer = Map();
     valuesToCustomer.putIfAbsent("Mech Confirmation", () => "Confirmed");
 
-    // showDialog(context: context, builder: (_) => null);
     String transactID = list[index].transactID;
     String cusUID = list[index].otherPersonUID;
     rootRef
@@ -246,16 +211,59 @@ class _MechJobsFState extends State<MechJobsF> {
               Navigator.pop(context);
               showToast("Updated Job", context);
             });
+    asetState(() {
+      bool isConfirmed = list[widget.index].cusStatus == "Confirmed";
+      status = isConfirmed ? "COMPLETED!" : "PENDING!";
+      statusColor = isConfirmed ? Colors.black12 : Colors.red;
+    });
     Navigator.pop(context);
     showToast("Updated Job", context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: double.infinity,
-      color: Color(0xb090A1AE),
-      child: _buildFutureBuilder(),
+    if (list[widget.index].cusStatus == "Confirmed" &&
+        list[widget.index].mechStatus == "Confirmed") {
+      status = "COMPLETED!";
+      statusColor = Colors.black12;
+    } else if (list[widget.index].mechStatus == "Confirmed") {
+      status = "PENDING!";
+      statusColor = Colors.red;
+    } else {
+      status = "Confirm Job?";
+      statusColor = Colors.blue;
+    }
+    return StatefulBuilder(
+      builder: (context, _setState) => Center(
+        child: RaisedButton(
+          color: statusColor,
+          onPressed: status == "Confirm Job?"
+              ? () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (_) => CustomDialog(
+                      title: "Are you sure you want to confirm the Customer?",
+                      onClicked: () {
+                        confirmJob(widget.index, _setState);
+                      },
+                      includeHeader: true,
+                    ),
+                  );
+                }
+              : () {},
+          child: Padding(
+            padding: EdgeInsets.all(6.0),
+            child: Text(
+              status,
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
