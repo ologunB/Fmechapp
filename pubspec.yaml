@@ -37,27 +37,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/person.png
-    - assets/images/cc1.jpg
-    - assets/images/cc2.jpg
-    - assets/images/cc3.jpg
-    - assets/images/cc4.jpg
-    - assets/images/cc5.jpg
-    - assets/images/cc6.jpg
-    - assets/images/cc7.jpg
-    - assets/images/facebook.png
-    - assets/images/twitter.png
-    - assets/images/instagram.png
-    - assets/images/add_camera.png
-    - assets/images/engineer.png
-    - assets/images/photo.png
-    - assets/images/placeholder.png
-    - assets/images/description.png
-    - assets/images/naira_icon.png
-    - assets/images/bg_image.jpg
-    - assets/images/car.png
-    - assets/images/app_back.jpg
-
+    - assets/images/
 
   fonts:
     - family: Raleway
