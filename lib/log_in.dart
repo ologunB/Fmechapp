@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mechapp/cus_main.dart';
 import 'package:mechapp/mechanic/mech_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'cus_main.dart';
 import 'libraries/custom_button.dart';
 import 'libraries/toast.dart';
 import 'utils/type_constants.dart';
@@ -104,6 +106,58 @@ class _SignInPageState extends State<SignInPage> {
   String inPass = "";
   String inForgotPass = "";
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  Future signIn(String email, String password) async {
+    await _firebaseAuth
+        .signInWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+      FirebaseUser user = value.user;
+
+      if (value.user != null) {
+        if (!value.user.isEmailVerified) {
+          showToast("Email not verified", context);
+          user.delete();
+          return;
+        }
+        Firestore.instance
+            .collection('All')
+            .document(user.uid)
+            .get()
+            .then((document) {
+          String type = document.data["Type"];
+          Navigator.of(context).pushReplacement(
+            CupertinoPageRoute(
+              fullscreenDialog: true,
+              builder: (context) {
+                return type == "Customer" ? CusMainPage() : MechMainPage();
+              },
+            ),
+          );
+
+          String uid = type == "Customer" ? "Uid" : "Mech Uid";
+          putInDB(type, document.data[uid], document.data["Email"],
+              document.data["Company Name"]);
+
+          showToast("Logged in", context);
+        }).catchError((ee) {
+          print(ee);
+          showToast(ee.toString(), context);
+        });
+        //  showToast(user.uid, context);
+      } else {
+        showToast("User doesn't exist", context);
+      }
+      return;
+    }).catchError((e) {
+      showToast("$e", context);
+      print(e);
+
+      return;
+    });
+    //  return "";
+  }
 
   Future putInDB(String type, String uid, String email, String name) async {
     final SharedPreferences prefs = await _prefs;
@@ -248,12 +302,14 @@ class _SignInPageState extends State<SignInPage> {
                                               .toString()
                                               .isEmpty) {
                                             showEmptyToast("Email", context);
+                                            return;
                                           } else if (_inPass.text
                                               .toString()
                                               .isEmpty) {
                                             showEmptyToast("Password", context);
+                                            return;
                                           }
-                                          //putInDB("from The DB", " ", " ");
+                                          signIn(_inEmail.text, _inPass.text);
                                         },
                                         icon: Icon(
                                           Icons.arrow_forward,
@@ -262,55 +318,6 @@ class _SignInPageState extends State<SignInPage> {
                                         iconLeft: false,
                                       ),
                                     ),
-                                    Center(
-                                      child: CustomButton(
-                                        title: "  SIGN IN as mech  ",
-                                        onPress: () {
-                                          Navigator.of(context).pushReplacement(
-                                            CupertinoPageRoute(
-                                              fullscreenDialog: true,
-                                              builder: (context) {
-                                                return MechMainPage();
-                                              },
-                                            ),
-                                          );
-                                          putInDB(
-                                              "Mechanic",
-                                              "25ji5ETsoIUPQaPlE4MnsEizv9x2",
-                                              "mechtest@gmail.com",
-                                              "mechanic Name");
-                                        },
-                                        icon: Icon(
-                                          Icons.arrow_forward,
-                                          color: Colors.white,
-                                        ),
-                                        iconLeft: false,
-                                      ),
-                                    ),
-                                    Center(
-                                        child: CustomButton(
-                                      title: "  SIGN IN as cus  ",
-                                      onPress: () {
-                                        Navigator.of(context).pushReplacement(
-                                          CupertinoPageRoute(
-                                            fullscreenDialog: true,
-                                            builder: (context) {
-                                              return CusMainPage();
-                                            },
-                                          ),
-                                        );
-                                        putInDB(
-                                            "Customer",
-                                            "IHsWCYGGNAQnOVzPJVakAJkl6ro2",
-                                            "customertest@gmail.com",
-                                            "customer Name");
-                                      },
-                                      icon: Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                      ),
-                                      iconLeft: false,
-                                    ))
                                   ])))
                     ]))))));
   }

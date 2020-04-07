@@ -32,7 +32,7 @@ class _EachProductState extends State<EachProduct> {
                 width: size.width,
                 height: size.height / 2.5,
                 child: CachedNetworkImage(
-                  imageUrl: widget.shopItem.image,
+                  imageUrl: widget.shopItem.images[0],
                   height: 100,
                   width: 100,
                   placeholder: (context, url) => CircularProgressIndicator(),

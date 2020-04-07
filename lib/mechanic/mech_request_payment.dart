@@ -144,10 +144,10 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
     rootRef.child("Payment Request").child("Pending").child(mUID).set(pRequest);
     rootRef.child("All Jobs Collection").child(mUID).update(allJobs);
 
-    setState(() {
+  /*  setState(() {
       t6 = ppA;
       t7 = pR;
-    });
+    });*/
   }
 
   @override

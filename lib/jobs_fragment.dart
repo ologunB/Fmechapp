@@ -344,7 +344,7 @@ class _ConfirmButtonState extends State<ConfirmButton> {
         list[widget.index].mechStatus == "Confirmed") {
       if (list[widget.index].hasReviewed == "True") {
         status = "COMPLETED!";
-        statusColor = Colors.black38;
+        statusColor = Colors.black12;
       } else {
         status = "RATE MECH.";
         statusColor = Colors.teal;

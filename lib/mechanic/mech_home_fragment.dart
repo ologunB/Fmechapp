@@ -50,7 +50,6 @@ class _MechHomeFragmentState extends State<MechHomeFragment>
   }
 
   Widget _buildFutureBuilder() {
-    getJobs();
     return Center(
       child: FutureBuilder<List<String>>(
         future: getJobs(),

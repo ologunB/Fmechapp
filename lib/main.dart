@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(ChangeNotifierProvider(
     create: (context) => JobNotifier(),
     child: MyApp(),

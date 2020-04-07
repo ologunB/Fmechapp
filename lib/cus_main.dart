@@ -73,7 +73,7 @@ class _CusMainPageState extends State<CusMainPage> {
     HomeFragment(),
     MyGarage(),
     NearbyF(),
-    ShopF(),
+    ShopContainer(),
     MyJobsF(),
     NotificationF(),
     HelpF(),

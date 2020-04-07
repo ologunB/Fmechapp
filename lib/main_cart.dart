@@ -57,10 +57,7 @@ class _MainCartState extends State<MainCart> {
         body: Container(
           height: double.infinity,
           width: double.infinity,
-          child: TabBarView(children: [
-            MyCart(),
-            CartHistory(),
-          ]),
+          child: TabBarView(children: [MyCart(), CartHistory()]),
         ),
       ),
     );

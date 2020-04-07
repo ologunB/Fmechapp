@@ -129,14 +129,16 @@ class EachJob {
 }
 
 class ShopItem {
-  String name, price, soldBy, desc, image, email, number, itemID;
+  String name, price, soldBy, desc, email, number, itemID, type;
+  List images;
   ShopItem(
       {this.name,
       this.price,
       this.soldBy,
       this.desc,
-      this.image,
+      this.images,
       this.email,
       this.number,
-      this.itemID});
+      this.itemID,
+      type});
 }
