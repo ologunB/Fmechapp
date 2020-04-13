@@ -8,7 +8,10 @@ class MainCart extends StatefulWidget {
   _MainCartState createState() => _MainCartState();
 }
 
-class _MainCartState extends State<MainCart> {
+class _MainCartState extends State<MainCart>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;

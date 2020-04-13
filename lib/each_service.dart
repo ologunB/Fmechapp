@@ -57,6 +57,7 @@ class _EachServiceState extends State<EachService>
   void initState() {
     super.initState();
     getUserLocation();
+    getAllMechanics();
   }
 
   Future<Position> locateUser() async {
@@ -280,6 +281,7 @@ class _EachServiceState extends State<EachService>
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
 
+    final container = _body(primaryColor);
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -288,6 +290,6 @@ class _EachServiceState extends State<EachService>
         body: Container(
             height: double.infinity,
             color: Color(0xb090A1AE),
-            child: _body(primaryColor)));
+            child: container));
   }
 }

@@ -212,7 +212,7 @@ class _ViewMechProfileState extends State<ViewMechProfile>
                           return CustomButton(
                             title: "Call Now",
                             onPress: () {
-                              _setState(() {
+                              setState(() {
                                 jobVisibility = true;
                               });
                               launch(

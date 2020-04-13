@@ -15,16 +15,14 @@ String t6 = "--", t7 = "--";
 
 class _MechRequestPaymentState extends State<MechRequestPayment> {
   Future getJobs() async {
-    DatabaseReference dataRef = FirebaseDatabase.instance
-        .reference()
-        .child("All Jobs Collection")
-        .child(mUID);
+    DatabaseReference dataRef =
+        rootRef.child("All Jobs Collection").child(mUID);
 
     await dataRef.once().then((snapshot) {
       var dATA = snapshot.value;
 
-      setState(() async {
-        t6 = dATA['Pay pending Amount'];
+      setState(() {
+        t6 = dATA['Payment Pending Amount'];
         t7 = dATA['Payment Request'];
       });
     });
@@ -90,27 +88,39 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
                             StatefulBuilder(
                               builder: (context, _setState) {
                                 return CustomButton(
-                                  onPress: () {
-                                    _formKey.currentState.save();
-                                    _formKey.currentState.validate();
+                                  onPress: isLoading
+                                      ? null
+                                      : () {
+                                          _formKey.currentState.save();
+                                          _formKey.currentState.validate();
 
-                                    _setState(() {
-                                      _autoValidate = true;
-                                    });
+                                          _setState(() {
+                                            _autoValidate = true;
+                                          });
 
-                                    if (_formKey.currentState.validate()) {
-                                      processRequest(_setState);
-                                      Toast.show("Request Made!", context,
-                                          duration: Toast.LENGTH_SHORT,
-                                          gravity: Toast.BOTTOM);
-                                    }
-                                  },
-                                  title: "REQUEST PAYMENT  ",
+                                          if (_formKey.currentState
+                                              .validate()) {
+                                            _setState(() {
+                                              isLoading = true;
+                                            });
+                                            processRequest(_setState);
+                                            Toast.show("Request Made!", context,
+                                                duration: Toast.LENGTH_SHORT,
+                                                gravity: Toast.BOTTOM);
+                                          }
+                                        },
+                                  title: isLoading
+                                      ? "PROCESSING"
+                                      : "REQUEST PAYMENT  ",
                                   iconLeft: false,
-                                  icon: Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Colors.white,
-                                  ),
+                                  icon: isLoading
+                                      ? CircularProgressIndicator(
+                                          backgroundColor: Colors.white,
+                                        )
+                                      : Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.white,
+                                        ),
                                 );
                               },
                             )
@@ -130,6 +140,7 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
   TextEditingController _amountC = TextEditingController();
 
   bool _autoValidate = false;
+  bool isLoading = false;
   void processRequest(_setState) {
     String amount = _amountC.toString().trim();
 
@@ -146,11 +157,12 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
     allJobs.putIfAbsent("date", () => thePresentTime());
 
     rootRef.child("Payment Request").child("Pending").child(mUID).set(pRequest);
-    rootRef.child("All Jobs Collection").child(mUID).update(allJobs);
-
-    _setState(() {
-      t6 = ppA;
-      t7 = pR;
+    rootRef.child("All Jobs Collection").child(mUID).update(allJobs).then((a) {
+      _setState(() {
+        t6 = ppA;
+        t7 = pR;
+        isLoading = false;
+      });
     });
   }
 

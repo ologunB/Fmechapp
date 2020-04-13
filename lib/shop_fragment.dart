@@ -102,10 +102,12 @@ class _ShopToolsFragState extends State<ShopToolsFrag>
 
   @override
   Widget build(BuildContext context) {
+    final container = _buildFutureBuilder("Tool");
+
     return Container(
       height: double.infinity,
       color: Color(0xb090A1AE),
-      child: _buildFutureBuilder("Tool"),
+      child: container,
     );
   }
 }
@@ -122,10 +124,12 @@ class _ShopPartsFragState extends State<ShopPartsFrag>
 
   @override
   Widget build(BuildContext context) {
+    final container = _buildFutureBuilder("Part");
+
     return Container(
       height: double.infinity,
       color: Color(0xb090A1AE),
-      child: _buildFutureBuilder("Part"),
+      child: container,
     );
   }
 }

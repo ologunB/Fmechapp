@@ -11,7 +11,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mechapp/dropdown_noti_cate.dart';
 import 'package:mechapp/libraries/custom_button.dart';
 import 'package:mechapp/libraries/toast.dart';
-import 'package:mechapp/select_image.dart';
 
 import '../utils/type_constants.dart';
 
@@ -53,7 +52,7 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
       bankNameC,
       categoryC,
       specifiC;
-  String profileImageUrl, pre1image, pre2image;
+  String profileImageUrl, preImageUrl1, preImageUrl2;
   List<bool> categoryBool, specBool;
   bool isUpdating = false;
 
@@ -62,6 +61,22 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
 
     _setState(() {
       _mainPicture = img;
+    });
+  }
+
+  Future getImg1(_setState) async {
+    var img = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    _setState(() {
+      _previous1 = img;
+    });
+  }
+
+  Future getImg2(_setState) async {
+    var img = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    _setState(() {
+      _previous2 = img;
     });
   }
 
@@ -83,8 +98,8 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
             accNumC = TextEditingController(text: dATA["Bank Account Number"]);
             bankNameC = TextEditingController(text: dATA["Bank Name"]);
             profileImageUrl = dATA["Image Url"];
-            pre1image = dATA["PreviousImage1 Url"];
-            pre2image = dATA["PreviousImage2 Url"];
+            preImageUrl1 = dATA["PreviousImage1 Url"];
+            preImageUrl2 = dATA["PreviousImage2 Url"];
 
             List categories = dATA["Categories"];
             List specifications = dATA["Specifications"];
@@ -274,17 +289,91 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Expanded(
-                                child: SelectImage(
-                                  url: pre1image,
-                                  defaultUrl: "assets/images/photo.png",
-                                  image: _previous1,
+                                child: StatefulBuilder(
+                                  builder: (context, _setState) {
+                                    return Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(50.0),
+                                      ),
+                                      child: InkWell(
+                                        onTap: () {
+                                          getImg1(_setState);
+                                        },
+                                        child: _previous1 == null
+                                            ? CachedNetworkImage(
+                                                imageUrl: preImageUrl1,
+                                                height: 90,
+                                                width: 90,
+                                                placeholder: (context, url) =>
+                                                    Image(
+                                                        image: AssetImage(
+                                                            "assets/images/photo.png"),
+                                                        height: 90,
+                                                        width: 90,
+                                                        fit: BoxFit.contain),
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    Image(
+                                                        image: AssetImage(
+                                                            "assets/images/photo.png"),
+                                                        height: 90,
+                                                        width: 90,
+                                                        fit: BoxFit.contain),
+                                              )
+                                            : Image.file(_previous1,
+                                                height: 90,
+                                                width: 90,
+                                                fit: BoxFit.contain),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                               Expanded(
-                                child: SelectImage(
-                                  url: pre2image,
-                                  defaultUrl: "assets/images/photo.png",
-                                  image: _previous2,
+                                child: StatefulBuilder(
+                                  builder: (context, _setState) {
+                                    return Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(50.0),
+                                      ),
+                                      child: InkWell(
+                                        onTap: () {
+                                          getImg2(_setState);
+                                        },
+                                        child: _previous2 == null
+                                            ? CachedNetworkImage(
+                                                imageUrl: preImageUrl2,
+                                                height: 90,
+                                                width: 90,
+                                                placeholder: (context, url) =>
+                                                    Image(
+                                                        image: AssetImage(
+                                                            "assets/images/photo.png"),
+                                                        height: 90,
+                                                        width: 90,
+                                                        fit: BoxFit.contain),
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    Image(
+                                                        image: AssetImage(
+                                                            "assets/images/photo.png"),
+                                                        height: 90,
+                                                        width: 90,
+                                                        fit: BoxFit.contain),
+                                              )
+                                            : Image.file(_previous2,
+                                                height: 90,
+                                                width: 90,
+                                                fit: BoxFit.contain),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -375,7 +464,7 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                             intB++;
                                           }
 
-                                          //   showToast("Updating...", context);
+                                          showToast("Updating...", context);
 
                                           final Map<String, Object> m = Map();
                                           m.putIfAbsent("Bank Account Name",
@@ -405,9 +494,6 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                               .collection("All")
                                               .document(mUID)
                                               .updateData(m);
-
-                                          showMiddleToast(
-                                              _mainPicture.toString(), context);
 
                                           if (_mainPicture != null) {
                                             StorageReference reference =

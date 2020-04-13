@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mechapp/libraries/custom_button.dart';
 import 'package:mechapp/libraries/toast.dart';
-import 'package:mechapp/log_in.dart';
 import 'package:mechapp/utils/type_constants.dart';
 
 var rootRef = FirebaseDatabase.instance.reference();
@@ -101,7 +100,6 @@ class _MechMakePaymentState extends State<MechMakePayment> {
 
     rootRef.child("All Jobs Collection").child(mUID).update(allJobs);
 
-    // startActivity(new Intent(MakePaymentActivity.this, MechMainActivity.class));
     showToast("Payment Complete", context);
   }
 
