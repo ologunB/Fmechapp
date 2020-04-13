@@ -17,21 +17,15 @@ class _MainCartState extends State<MainCart> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: primaryColor),
-          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.white),
+          backgroundColor: primaryColor,
           elevation: 0.0,
           title: TabBar(
               isScrollable: true,
-              unselectedLabelColor: primaryColor,
+              unselectedLabelColor: Colors.white70,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    primaryColor,
-                    Colors.deepPurple,
-                    Colors.blueAccent,
-                  ]),
-                  borderRadius: BorderRadius.circular(50),
-                  color: primaryColor),
+                  borderRadius: BorderRadius.circular(50), color: Colors.blue),
               tabs: [
                 Tab(
                   child: Align(
@@ -97,7 +91,8 @@ class _MyCartState extends State<MyCart> with AutomaticKeepAliveClientMixin {
                         return ListTile(
                           title: Text(
                             "Cart Items",
-                            style: TextStyle(fontSize: 22),
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                         );
                       },
@@ -257,7 +252,8 @@ class _MyCartState extends State<MyCart> with AutomaticKeepAliveClientMixin {
                         return ListTile(
                           title: Text(
                             "Local Address",
-                            style: TextStyle(fontSize: 22),
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                         );
                       },
