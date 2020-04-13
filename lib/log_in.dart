@@ -1,39 +1,34 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mechapp/cus_main.dart';
+import 'package:mechapp/dropdown_noti_cate.dart';
+import 'package:mechapp/get_location_from_address.dart';
 import 'package:mechapp/mechanic/mech_main.dart';
+import 'package:mechapp/select_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'libraries/custom_button.dart';
-import 'libraries/toast.dart';
 import 'utils/type_constants.dart';
+
+TabController _tabController;
+FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+DatabaseReference _dataRef = FirebaseDatabase.instance.reference();
 
 class LogOn extends StatefulWidget {
   @override
   _LogOnState createState() => _LogOnState();
 }
 
-showEmptyToast(String aa, BuildContext context) {
-  Toast.show("$aa cannot be empty", context,
-      duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-  return;
-}
-
-showToast(String aa, BuildContext context) {
-  Toast.show("$aa", context,
-      duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-  return;
-}
-
-TabController __tabController;
-
 class _LogOnState extends State<LogOn> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    __tabController = new TabController(vsync: this, length: 2);
+    _tabController = new TabController(vsync: this, length: 2);
   }
 
   @override
@@ -47,7 +42,7 @@ class _LogOnState extends State<LogOn> with SingleTickerProviderStateMixin {
           iconTheme: IconThemeData(color: Colors.white, size: 28),
           centerTitle: true,
           title: TabBar(
-            controller: __tabController,
+            controller: _tabController,
             unselectedLabelColor: Colors.blueAccent,
             labelColor: Colors.white,
             labelStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -85,7 +80,7 @@ class _LogOnState extends State<LogOn> with SingleTickerProviderStateMixin {
           ),
           child: TabBarView(
             children: [SignInPage(), SignUpPage()],
-            controller: __tabController,
+            controller: _tabController,
           ),
         ),
       ),
@@ -102,14 +97,14 @@ class _SignInPageState extends State<SignInPage> {
   TextEditingController _inEmail = TextEditingController();
   TextEditingController _inPass = TextEditingController();
   TextEditingController _inForgotPass = TextEditingController();
-  String inEmail = "";
-  String inPass = "";
-  String inForgotPass = "";
+  bool isLoading = false;
+  bool forgotPassIsLoading = false;
+
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
   Future signIn(String email, String password) async {
+    setState(() {
+      isLoading = true;
+    });
     await _firebaseAuth
         .signInWithEmailAndPassword(email: email, password: password)
         .then((value) {
@@ -117,8 +112,11 @@ class _SignInPageState extends State<SignInPage> {
 
       if (value.user != null) {
         if (!value.user.isEmailVerified) {
+          setState(() {
+            isLoading = false;
+          });
           showToast("Email not verified", context);
-          user.delete();
+          _firebaseAuth.signOut();
           return;
         }
         Firestore.instance
@@ -142,26 +140,29 @@ class _SignInPageState extends State<SignInPage> {
 
           showToast("Logged in", context);
         }).catchError((ee) {
-          print(ee);
+          setState(() {
+            isLoading = false;
+          });
           showToast(ee.toString(), context);
         });
-        //  showToast(user.uid, context);
       } else {
+        setState(() {
+          isLoading = false;
+        });
         showToast("User doesn't exist", context);
       }
       return;
     }).catchError((e) {
       showToast("$e", context);
-      print(e);
-
+      setState(() {
+        isLoading = false;
+      });
       return;
     });
-    //  return "";
   }
 
   Future putInDB(String type, String uid, String email, String name) async {
     final SharedPreferences prefs = await _prefs;
-
     setState(() {
       prefs.setBool("isLoggedIn", true);
       prefs.setString("uid", uid);
@@ -169,157 +170,197 @@ class _SignInPageState extends State<SignInPage> {
       prefs.setString("name", name);
       prefs.setString("type", type);
     });
+    _firebaseAuth.signOut();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(18.0),
+        padding: EdgeInsets.all(18.0),
         child: Center(
             child: Card(
                 elevation: 5,
                 child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 25.0),
                     child: SingleChildScrollView(
-                        child:
-                            Column(mainAxisSize: MainAxisSize.min, children: <
-                                Widget>[
-                      Container(
-                          child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: CupertinoTextField(
-                                        //decoration: InputDecoration(hintText: "Email"),
-                                        controller: _inEmail,
-                                        placeholder: "Email",
-                                        placeholderStyle: TextStyle(
-                                            fontWeight: FontWeight.w400),
-
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        padding: EdgeInsets.all(10),
-                                        onChanged: (String e) {
-                                          setState(() {
-                                            e = inEmail;
-                                          });
-                                        },
-                                        style: TextStyle(
-                                            fontSize: 20, color: Colors.black),
+                        child: Container(
+                            child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(bottom: 8.0),
+                                          child: Text(
+                                            "Sign In",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: primaryColor,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: CupertinoTextField(
-                                        //decoration: InputDecoration(hintText: "Password"),
-                                        controller: _inPass,
-                                        placeholder: "Password",
-                                        padding: EdgeInsets.all(10),
-                                        placeholderStyle: TextStyle(
-                                            fontWeight: FontWeight.w400),
-
-                                        obscureText: true,
-                                        onChanged: (String e) {
-                                          setState(() {
-                                            e = inPass;
-                                          });
-                                        },
-                                        style: TextStyle(
-                                            fontSize: 20, color: Colors.black),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: CupertinoTextField(
+                                          controller: _inEmail,
+                                          placeholder: "Email",
+                                          placeholderStyle: TextStyle(
+                                              fontWeight: FontWeight.w400),
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          padding: EdgeInsets.all(10),
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.black),
+                                        ),
                                       ),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () {
-                                        showDialog(
-                                          barrierDismissible: true,
-                                          context: context,
-                                          builder: (_) => CupertinoAlertDialog(
-                                            title: Column(
-                                              children: <Widget>[
-                                                Text("Enter Email"),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: CupertinoTextField(
+                                          controller: _inPass,
+                                          placeholder: "Password",
+                                          padding: EdgeInsets.all(10),
+                                          placeholderStyle: TextStyle(
+                                              fontWeight: FontWeight.w400),
+                                          obscureText: true,
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                      MaterialButton(
+                                        onPressed: () {
+                                          showDialog(
+                                            barrierDismissible: true,
+                                            context: context,
+                                            builder: (_) =>
+                                                CupertinoAlertDialog(
+                                              title: Column(
+                                                children: <Widget>[
+                                                  Text("Enter Email"),
+                                                ],
+                                              ),
+                                              content: CupertinoTextField(
+                                                controller: _inForgotPass,
+                                                placeholder: "Email",
+                                                padding: EdgeInsets.all(10),
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                placeholderStyle: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w300),
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    color: Colors.black),
+                                              ),
+                                              actions: <Widget>[
+                                                Center(
+                                                  child: StatefulBuilder(
+                                                    builder:
+                                                        (context, _setState) =>
+                                                            CustomButton(
+                                                      title: forgotPassIsLoading
+                                                          ? ""
+                                                          : "Reset Password",
+                                                      onPress:
+                                                          forgotPassIsLoading
+                                                              ? null
+                                                              : () async {
+                                                                  setState(() {
+                                                                    forgotPassIsLoading =
+                                                                        true;
+                                                                  });
+                                                                  await _firebaseAuth
+                                                                      .sendPasswordResetEmail(
+                                                                          email: _inForgotPass
+                                                                              .text)
+                                                                      .then(
+                                                                          (value) {
+                                                                    _setState(
+                                                                        () {
+                                                                      forgotPassIsLoading =
+                                                                          true;
+                                                                    });
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                    showMiddleToast(
+                                                                        "Reset Mail Sent",
+                                                                        context);
+                                                                  });
+                                                                },
+                                                      icon: forgotPassIsLoading
+                                                          ? CircularProgressIndicator(
+                                                              backgroundColor:
+                                                                  Colors.white,
+                                                            )
+                                                          : Icon(
+                                                              Icons
+                                                                  .arrow_forward,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                      iconLeft: false,
+                                                      hasColor:
+                                                          forgotPassIsLoading
+                                                              ? true
+                                                              : false,
+                                                      bgColor: Colors.blueGrey,
+                                                    ),
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                            content: CupertinoTextField(
-                                              //decoration: InputDecoration(hintText: "Password"),
-                                              controller: _inForgotPass,
-                                              placeholder: "Email",
-                                              padding: EdgeInsets.all(10),
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              placeholderStyle: TextStyle(
-                                                  fontWeight: FontWeight.w300),
-
-                                              onChanged: (String e) {
-                                                setState(() {
-                                                  e = inForgotPass;
-                                                });
-                                              },
-                                              style: TextStyle(
-                                                  fontSize: 20,
-                                                  color: Colors.black),
-                                            ),
-                                            actions: <Widget>[
-                                              Center(
-                                                child: CustomButton(
-                                                  title: "Reset Password",
-                                                  onPress: () {
-                                                    /*@override
-                                          Future<void> resetPassword(
-                                              String email) async {
-                                            await _firebaseAuth
-                                                .sendPasswordResetEmail(
-                                                    email: email);
-                                          }*/
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.arrow_forward,
-                                                    color: Colors.white,
-                                                  ),
-                                                  iconLeft: false,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        "Forgot Password?",
-                                        style: TextStyle(
-                                            color: Colors.indigo,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                    Center(
-                                      child: CustomButton(
-                                        title: "  SIGN IN  ",
-                                        onPress: () {
-                                          if (_inEmail.text
-                                              .toString()
-                                              .isEmpty) {
-                                            showEmptyToast("Email", context);
-                                            return;
-                                          } else if (_inPass.text
-                                              .toString()
-                                              .isEmpty) {
-                                            showEmptyToast("Password", context);
-                                            return;
-                                          }
-                                          signIn(_inEmail.text, _inPass.text);
+                                          );
                                         },
-                                        icon: Icon(
-                                          Icons.arrow_forward,
-                                          color: Colors.white,
+                                        child: Text(
+                                          "Forgot Password?",
+                                          style: TextStyle(
+                                              color: Colors.indigo,
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w600),
                                         ),
-                                        iconLeft: false,
                                       ),
-                                    ),
-                                  ])))
-                    ]))))));
+                                      Center(
+                                        child: CustomButton(
+                                          title: isLoading ? "" : "  SIGN IN  ",
+                                          onPress: isLoading
+                                              ? null
+                                              : () {
+                                                  if (_inEmail.text
+                                                      .toString()
+                                                      .isEmpty) {
+                                                    showEmptyToast(
+                                                        "Email", context);
+                                                    return;
+                                                  } else if (_inPass.text
+                                                      .toString()
+                                                      .isEmpty) {
+                                                    showEmptyToast(
+                                                        "Password", context);
+                                                    return;
+                                                  }
+                                                  signIn(_inEmail.text,
+                                                      _inPass.text);
+                                                },
+                                          icon: isLoading
+                                              ? CircularProgressIndicator(
+                                                  backgroundColor: Colors.white,
+                                                )
+                                              : Icon(
+                                                  Icons.arrow_forward,
+                                                  color: Colors.white,
+                                                ),
+                                          iconLeft: false,
+                                          hasColor: isLoading ? true : false,
+                                          bgColor: Colors.blueGrey,
+                                        ),
+                                      ),
+                                    ]))))))));
   }
 }
 
@@ -341,16 +382,6 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return ListView(
       children: <Widget>[
-/*
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 1100),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return ScaleTransition(child: child, scale: animation);
-          },
-          reverseDuration: Duration(milliseconds: 1100),
-          child: Center(child: _widget),
-        ),
-*/
         Center(child: currentWidget),
         Padding(
           padding: EdgeInsets.all(11.0),
@@ -383,16 +414,71 @@ class CusSignUp extends StatefulWidget {
 }
 
 class _CusSignUpState extends State<CusSignUp> {
+  bool isLoading = false;
   TextEditingController _upEmail = TextEditingController();
   TextEditingController _upPass = TextEditingController();
   TextEditingController _upName = TextEditingController();
-  String upEmail = "";
-  String upPass = "";
-  String upName = "";
+  TextEditingController _upPhoNum = TextEditingController();
+
+  List<bool> categoryBool, specBool, tempSpecBool, tempCategoryBool;
+
+  Future cusSignUp(String email, String password) async {
+    setState(() {
+      isLoading = true;
+    });
+    await _firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+      FirebaseUser user = value.user;
+
+      if (value.user != null) {
+        user.sendEmailVerification().then((verify) {
+          Map<String, Object> mData = Map();
+          mData.putIfAbsent("Company Name", () => _upName.text);
+          mData.putIfAbsent("Phone Number", () => _upPhoNum.text);
+          mData.putIfAbsent("Email", () => _upEmail.text);
+          mData.putIfAbsent("Type", () => "Customer");
+          mData.putIfAbsent("Uid", () => user.uid);
+
+          Firestore.instance
+              .collection("Customer")
+              .document(user.uid)
+              .setData(mData);
+          Firestore.instance
+              .collection("All")
+              .document(user.uid)
+              .setData(mData);
+          _dataRef
+              .child("Customer Collection")
+              .child(user.uid)
+              .set(mData)
+              .then((b) {
+            showToast("User created, Verify Email!", context);
+            setState(() {
+              isLoading = false;
+            });
+            _tabController.animateTo(0);
+          });
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        showToast("User doesn't exist", context);
+      }
+      return;
+    }).catchError((e) {
+      showToast("$e", context);
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
-
     return Padding(
       padding: EdgeInsets.all(18.0),
       child: Center(
@@ -407,7 +493,7 @@ class _CusSignUpState extends State<CusSignUp> {
                 children: <Widget>[
                   Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: EdgeInsets.only(bottom: 8.0),
                       child: Text(
                         "User's SignUp",
                         style: TextStyle(
@@ -425,17 +511,13 @@ class _CusSignUpState extends State<CusSignUp> {
                       keyboardType: TextInputType.text,
                       placeholderStyle: TextStyle(fontWeight: FontWeight.w400),
 
-                      placeholder: "Name",
-                      onChanged: (String e) {
-                        setState(() {
-                          e = upName;
-                        });
-                      },
+                      placeholder: "Full Name",
+
                       style: TextStyle(fontSize: 20, color: Colors.black),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: CupertinoTextField(
                       //decoration: InputDecoration(hintText: "Email"),
                       controller: _upEmail,
@@ -443,16 +525,23 @@ class _CusSignUpState extends State<CusSignUp> {
                       keyboardType: TextInputType.emailAddress,
                       placeholderStyle: TextStyle(fontWeight: FontWeight.w400),
 
-                      onChanged: (String e) {
-                        setState(() {
-                          e = upEmail;
-                        });
-                      },
                       style: TextStyle(fontSize: 20, color: Colors.black),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
+                    child: CupertinoTextField(
+                      //decoration: InputDecoration(hintText: "Email"),
+                      controller: _upPhoNum,
+                      placeholder: "Phone Number", padding: EdgeInsets.all(10),
+                      keyboardType: TextInputType.number,
+                      placeholderStyle: TextStyle(fontWeight: FontWeight.w400),
+
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
                     child: CupertinoTextField(
                       //decoration: InputDecoration(hintText: "Password"),
                       controller: _upPass,
@@ -460,16 +549,11 @@ class _CusSignUpState extends State<CusSignUp> {
                       obscureText: true, padding: EdgeInsets.all(10),
                       placeholderStyle: TextStyle(fontWeight: FontWeight.w400),
 
-                      onChanged: (String e) {
-                        setState(() {
-                          e = upPass;
-                        });
-                      },
                       style: TextStyle(fontSize: 20, color: Colors.black),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Row(
                       children: <Widget>[
                         Text("Already A Member?",
@@ -479,7 +563,7 @@ class _CusSignUpState extends State<CusSignUp> {
                                 fontWeight: FontWeight.w500)),
                         MaterialButton(
                           onPressed: () {
-                            __tabController.animateTo(0);
+                            _tabController.animateTo(0);
                           },
                           child: Text(
                             "Sign In",
@@ -494,21 +578,33 @@ class _CusSignUpState extends State<CusSignUp> {
                   ),
                   Center(
                     child: CustomButton(
-                      title: "   SIGN UP   ",
-                      onPress: () {
-                        if (_upEmail.text.toString().isEmpty) {
-                          showEmptyToast("Email", context);
-                        } else if (_upPass.text.toString().isEmpty) {
-                          showEmptyToast("Password", context);
-                        } else if (_upName.text.toString().isEmpty) {
-                          showEmptyToast("Name", context);
-                        }
-                      },
-                      icon: Icon(
-                        Icons.done,
-                        color: Colors.white,
-                      ),
+                      title: isLoading ? "" : "   SIGN UP   ",
+                      onPress: isLoading
+                          ? null
+                          : () {
+                              if (_upEmail.text.toString().isEmpty) {
+                                showEmptyToast("Email", context);
+                                return;
+                              } else if (_upPass.text.toString().isEmpty) {
+                                showEmptyToast("Password", context);
+                                return;
+                              } else if (_upName.text.toString().isEmpty) {
+                                showEmptyToast("Name", context);
+                                return;
+                              }
+                              cusSignUp(_upEmail.text, _upPass.text);
+                            },
+                      icon: isLoading
+                          ? CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            )
+                          : Icon(
+                              Icons.done,
+                              color: Colors.white,
+                            ),
                       iconLeft: false,
+                      hasColor: isLoading ? true : false,
+                      bgColor: Colors.blueGrey,
                     ),
                   ),
                 ],
@@ -527,22 +623,146 @@ class MechSignUp extends StatefulWidget {
 }
 
 class _MechSignUpState extends State<MechSignUp> {
+  bool isLoading = false;
+  double theLong, theLat;
+
+  File _mainPicture, _previous1, _previous2, _cacImage;
+  TextEditingController _upSpecify = TextEditingController();
+  TextEditingController _upCategory = TextEditingController();
+  TextEditingController _upName = TextEditingController();
+  TextEditingController _upPhoneNo = TextEditingController();
+  TextEditingController _upEmail = TextEditingController();
+  TextEditingController _upPass = TextEditingController();
+  TextEditingController _upStreetName = TextEditingController();
+  TextEditingController _upCity = TextEditingController();
+  TextEditingController _upLocality = TextEditingController();
+  TextEditingController _upWebsite = TextEditingController();
+  TextEditingController _upDescpt = TextEditingController();
+
+  Future cusSignUp(String email, String password) async {
+    setState(() {
+      isLoading = true;
+    });
+    _firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+      FirebaseUser user = value.user;
+
+      if (value.user != null) {
+        if (_upDescpt.text.isEmpty) {
+          _upDescpt.text = "empty";
+        }
+        if (_upWebsite.text.isEmpty) {
+          _upWebsite.text = "No Url";
+        }
+
+        String sample =
+            "https://firebasestorage.googleapis.com/v0/b/mechanics-b3612.appspot.com/o/photos%2Fimage%3A55039?alt=media&token=e25a7e4c-fa06-452a-b630-2b89bae6f7b4";
+
+        String p1, p2;
+
+        if (_previous1 == null) {
+          p1 = sample;
+        }
+        if (_previous2 == null) {
+          p2 = sample;
+        }
+
+        user.sendEmailVerification().then((verify) {
+          List<String> specTempList = [];
+          int intA = 0;
+          for (bool item in _specifyBoolList) {
+            if (item == true) {
+              specTempList.add(specifyList[intA]);
+            }
+            intA++;
+          }
+
+          List<String> catTempList = [];
+          int intB = 0;
+          for (bool item in _categoryBoolList) {
+            if (item == true) {
+              catTempList.add(categoryList[intB]);
+            }
+            intB++;
+          }
+
+          Map<String, Object> m = Map();
+          m.putIfAbsent("Company Name", () => _upName.text);
+          m.putIfAbsent("Specifications", () => specTempList);
+          m.putIfAbsent("Categories", () => catTempList);
+          m.putIfAbsent("Phone Number", () => _upPhoneNo.text);
+          m.putIfAbsent("Email", () => _upEmail);
+          // m.putIfAbsent("Password", () => Password);
+          m.putIfAbsent("Street Name", () => _upStreetName.text);
+          m.putIfAbsent("City", () => _upCity.text);
+          m.putIfAbsent("Locality", () => _upLocality.text);
+          m.putIfAbsent("Description", () => _upDescpt.text);
+          m.putIfAbsent("Website Url", () => _upWebsite.text);
+          m.putIfAbsent("Loc Latitude", () => theLat);
+          m.putIfAbsent("LOc Longitude", () => theLong);
+          //    m.putIfAbsent("Image Url", () => downloadUrl1);
+          //    m.putIfAbsent("CAC Image Url", () => downloadUri4);
+          m.putIfAbsent("PreviousImage1 Url", () => p1);
+          m.putIfAbsent("PreviousImage2 Url", () => p2);
+          m.putIfAbsent("Bank Account Name", () => "");
+          m.putIfAbsent("Bank Account Number", () => "");
+          m.putIfAbsent("Bank Name", () => "");
+          m.putIfAbsent("Type", () => "Mechanic");
+          m.putIfAbsent("Jobs Done", () => "0");
+          m.putIfAbsent("Rating", () => "0.00");
+          m.putIfAbsent("Reviews", () => "0");
+          m.putIfAbsent("Mech Uid", () => user.uid);
+          Map<String, String> allJobs = Map();
+          allJobs.putIfAbsent("Total Job", () => "0");
+          allJobs.putIfAbsent("Total Amount", () => "0");
+          allJobs.putIfAbsent("Pending Job", () => "0");
+          allJobs.putIfAbsent("Pending Amount", () => "0");
+          allJobs.putIfAbsent("Pay pending Amount", () => "0");
+          allJobs.putIfAbsent("Completed Amount", () => "0");
+          allJobs.putIfAbsent("Payment Request", () => "0");
+          allJobs.putIfAbsent("Cash Payment Debt", () => "0");
+
+          Firestore.instance
+              .collection("Mechanics")
+              .document(user.uid)
+              .setData(m);
+          Firestore.instance.collection("All").document(user.uid).setData(m);
+
+          _dataRef.child("Mechanic Collection").child(user.uid).set(m);
+
+          _dataRef
+              .child("All Jobs Collection")
+              .child(user.uid)
+              .set(allJobs)
+              .then((b) {
+            showToast("User created, Verify Email!", context);
+            setState(() {
+              isLoading = false;
+            });
+            _tabController.animateTo(0);
+            _firebaseAuth.signOut();
+          });
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        showToast("User doesn't exist", context);
+      }
+      return;
+    }).catchError((e) {
+      showToast("$e", context);
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
-    TextEditingController _upSpecify = TextEditingController();
-    TextEditingController _upCategory = TextEditingController();
-    TextEditingController _upName = TextEditingController();
-    TextEditingController _upPhoneNo = TextEditingController();
-    TextEditingController _upEmail = TextEditingController();
-    TextEditingController _upPass = TextEditingController();
-    TextEditingController _upStreetName = TextEditingController();
-    TextEditingController _upCity = TextEditingController();
-    TextEditingController _upLocality = TextEditingController();
-    TextEditingController _upWebsite = TextEditingController();
-    TextEditingController _upDescpt = TextEditingController();
-//    TextEditingController _inPass = TextEditingController();
-//    TextEditingController _inForgotPass = TextEditingController();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 20),
       child: Container(
@@ -565,14 +785,16 @@ class _MechSignUpState extends State<MechSignUp> {
                     ),
                   ),
                 ),
-                InkWell(
-                  onTap: () {},
-                  child: Image(
-                    image: AssetImage("assets/images/add_camera.png"),
-                    height: 90,
-                  ),
+                SelectImage(
+                  url: "em",
+                  defaultUrl: "assets/images/engineer.png",
+                  image: _mainPicture,
                 ),
-                Row(
+                NotiAndCategory(_upSpecify, _specifyBoolList, "Specifications",
+                    specifyList),
+                NotiAndCategory(
+                    _upCategory, _categoryBoolList, "Category", categoryList),
+                /*       Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Expanded(
@@ -794,7 +1016,7 @@ class _MechSignUpState extends State<MechSignUp> {
                       color: primaryColor,
                     ),
                   ],
-                ),
+                ),*/
                 TextField(
                   decoration: InputDecoration(hintText: "Company Name"),
                   style: TextStyle(fontSize: 18),
@@ -818,23 +1040,10 @@ class _MechSignUpState extends State<MechSignUp> {
                   style: TextStyle(fontSize: 18),
                   keyboardType: TextInputType.visiblePassword,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(hintText: "Street name"),
-                        style: TextStyle(fontSize: 18),
-                        readOnly: true,
-                        onTap: () {},
-                        controller: _upStreetName,
-                      ),
-                    ),
-                    Icon(
-                      Icons.location_on,
-                      color: primaryColor,
-                    ),
-                  ],
+                GetLocationFromAddress(
+                  theLat: theLat,
+                  theLong: theLong,
+                  upStreetName: _upStreetName,
                 ),
                 TextField(
                   decoration: InputDecoration(hintText: "City"),
@@ -869,14 +1078,20 @@ class _MechSignUpState extends State<MechSignUp> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Image(
-                      image: AssetImage("assets/images/photo.png"),
-                      height: 100,
+                    Expanded(
+                      child: SelectImage(
+                        url: "e ",
+                        defaultUrl: "assets/images/photo.png",
+                        image: _previous1,
+                      ),
                     ),
-                    Image(
-                      image: AssetImage("assets/images/photo.png"),
-                      height: 100,
-                    )
+                    Expanded(
+                      child: SelectImage(
+                        url: " e",
+                        defaultUrl: "assets/images/photo.png",
+                        image: _previous2,
+                      ),
+                    ),
                   ],
                 ),
                 Center(
@@ -890,45 +1105,53 @@ class _MechSignUpState extends State<MechSignUp> {
                   ),
                 ),
                 Center(
-                  child: Image(
-                    image: AssetImage("assets/images/photo.png"),
-                    height: 100,
-                  ),
-                ),
+                    child: SelectImage(
+                  url: " e",
+                  defaultUrl: "assets/images/photo.png",
+                  image: _cacImage,
+                )),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomButton(
-                    title: "   Register   ",
-                    onPress: () {
-                      if (_upEmail.text.toString().isEmpty) {
-                        showEmptyToast("Email", context);
-                      } else if (_upPass.text.toString().isEmpty) {
-                        showEmptyToast("Password", context);
-                      } else if (_upName.text.toString().isEmpty) {
-                        showEmptyToast("Name", context);
-                      } else if (_upPhoneNo.text.toString().isEmpty) {
-                        showEmptyToast("Phone Number", context);
-                      } else if (_upSpecify.text.toString().isEmpty) {
-                        showEmptyToast("Specification", context);
-                      } else if (_upCategory.text.toString().isEmpty) {
-                        showEmptyToast("Category", context);
-                      } else if (_upStreetName.text.toString().isEmpty) {
-                        showEmptyToast("Street name", context);
-                      } else if (_upCity.text.toString().isEmpty) {
-                        showEmptyToast("City", context);
-                      } else if (_upLocality.text.toString().isEmpty) {
-                        showEmptyToast("Locality", context);
-                      }
-                      /*else if (_upWebsite.text.toString().isEmpty) {
-                        showEmptyToast("Company's Website", context);
-                      } else if (_upDescpt.text.toString().isEmpty) {
-                        showEmptyToast("Description", context);
-                      }*/
-                    },
-                    icon: Icon(
-                      Icons.done,
-                      color: Colors.white,
-                    ),
+                    title: isLoading ? "" : "   Register   ",
+                    onPress: isLoading
+                        ? null
+                        : () {
+                            if (_upEmail.text.toString().isEmpty) {
+                              showEmptyToast("Email", context);
+                            } else if (_upPass.text.toString().isEmpty) {
+                              showEmptyToast("Password", context);
+                            } else if (_upName.text.toString().isEmpty) {
+                              showEmptyToast("Name", context);
+                            } else if (_upPhoneNo.text.toString().isEmpty) {
+                              showEmptyToast("Phone Number", context);
+                            } else if (_upSpecify.text.toString().isEmpty) {
+                              showEmptyToast("Specification", context);
+                            } else if (_upCategory.text.toString().isEmpty) {
+                              showEmptyToast("Category", context);
+                            } else if (_upStreetName.text.toString().isEmpty) {
+                              showEmptyToast("Street name", context);
+                            } else if (_upCity.text.toString().isEmpty) {
+                              showEmptyToast("City", context);
+                            } else if (_upLocality.text.toString().isEmpty) {
+                              showEmptyToast("Locality", context);
+                            } else if (_cacImage == null) {
+                              showEmptyToast("CAC Image", context);
+                            } else if (_mainPicture == null) {
+                              showEmptyToast("Image", context);
+                            }
+                          },
+                    icon: isLoading
+                        ? CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )
+                        : Icon(
+                            Icons.done,
+                            color: Colors.white,
+                          ),
+                    iconLeft: false,
+                    hasColor: isLoading ? true : false,
+                    bgColor: Colors.blueGrey,
                   ),
                 ),
               ],

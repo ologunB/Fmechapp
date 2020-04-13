@@ -1,0 +1,26 @@
+mike 30 x 1.25		37.5
+tola 20 x 1.25 x 1.25 x 1.27	40		120
+fola 30 x 1.25		37.5
+kunle 15 x 1.96   29
+.. ayo 400
+mine 24
+
+dotun 10 x 1.25 ^3						17
+4.3
+
+lekan 20 
+blessing 5								30
+abiola 5 
+4.5
+
+kunle 5 x 1.25 x 1.25   9.8
+fola 7 x 1.25 x 1.25	11				30
+audu 10		12.5
+13.2
+
+tola 15
+bello 20
+solomom 10								228
+ay 34
+oye 150
+34.2

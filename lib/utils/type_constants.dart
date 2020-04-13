@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mechapp/libraries/toast.dart';
 
 String mUID, mEmail, mName, userType;
 
@@ -71,10 +72,28 @@ List<String> categoryList = [
   "Wheel Balancing & Alignment",
 ];
 
+showEmptyToast(String aa, BuildContext context) {
+  Toast.show("$aa cannot be empty", context,
+      duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+  return;
+}
+
+showToast(String aa, BuildContext context) {
+  Toast.show("$aa", context,
+      duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+  return;
+}
+
+showMiddleToast(String aa, BuildContext context) {
+  Toast.show("$aa", context,
+      duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
+  return;
+}
+
 const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 String randomString() {
-  Random rnd = new Random(new DateTime.now().millisecondsSinceEpoch);
+  Random rnd = Random(DateTime.now().millisecondsSinceEpoch);
   String result = "";
   for (var i = 0; i < 12; i++) {
     result += chars[rnd.nextInt(chars.length)];

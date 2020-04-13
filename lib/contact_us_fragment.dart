@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:mechapp/utils/type_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'libraries/custom_button.dart';
 import 'libraries/toast.dart';
-import 'log_in.dart';
 
 class ContactUsF extends StatefulWidget {
   @override
@@ -27,7 +27,6 @@ class _ContactUsFState extends State<ContactUsF> {
 
   @override
   Widget build(BuildContext context) {
-    var oValue = 0.1;
     return Container(
       color: Color(0xb090A1AE),
       height: double.infinity,
@@ -51,7 +50,8 @@ class _ContactUsFState extends State<ContactUsF> {
                 ),
                 child: CupertinoTextField(
                   placeholder: "Type something here...",
-                  placeholderStyle: TextStyle(fontWeight: FontWeight.w400),
+                  placeholderStyle: TextStyle(
+                      fontWeight: FontWeight.w300, color: Colors.black38),
                   padding: EdgeInsets.all(10),
                   maxLines: 10,
                   onChanged: (e) {
@@ -91,12 +91,12 @@ class _ContactUsFState extends State<ContactUsF> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: EdgeInsets.all(18.0),
                   child: InkWell(
                     child: Image(
                       image: AssetImage("assets/images/instagram.png"),
-                      height: 30,
-                      width: 30,
+                      height: 40,
+                      width: 40,
                     ),
                     onTap: () async {
                       String _url1 =
@@ -112,12 +112,12 @@ class _ContactUsFState extends State<ContactUsF> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: EdgeInsets.all(18.0),
                   child: InkWell(
                     child: Image(
                       image: AssetImage("assets/images/facebook.png"),
-                      height: 30,
-                      width: 30,
+                      height: 40,
+                      width: 40,
                     ),
                     onTap: () async {
                       String _url1 = "fb://profile/100039244757529";
@@ -132,12 +132,12 @@ class _ContactUsFState extends State<ContactUsF> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: EdgeInsets.all(18.0),
                   child: InkWell(
                     child: Image(
                       image: AssetImage("assets/images/twitter.png"),
-                      height: 30,
-                      width: 30,
+                      height: 40,
+                      width: 40,
                     ),
                     onTap: () async {
                       String _url1 =

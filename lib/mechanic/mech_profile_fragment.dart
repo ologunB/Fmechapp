@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ import 'package:mechapp/libraries/custom_button.dart';
 import 'package:mechapp/libraries/toast.dart';
 import 'package:mechapp/select_image.dart';
 
-import '../log_in.dart';
 import '../utils/type_constants.dart';
 
 class MechProfileFragment extends StatefulWidget {
@@ -64,7 +64,7 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
       categoryC,
       specifiC;
   String profileImageUrl, pre1image, pre2image;
-  List<bool> categoryBool, specBool, tempSpecBool, tempCategoryBool;
+  List<bool> categoryBool, specBool;
   Widget _buildFutureBuilder(Color primaryColor) {
     return Center(
       child: FutureBuilder<Map>(
@@ -138,10 +138,10 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                             defaultUrl: "assets/images/engineer.png",
                             image: _mainPicture,
                           ),
-                          NotiAndCategory(specifiC, specBool, tempCategoryBool,
-                              "Specifications", specifyList),
-                          NotiAndCategory(categoryC, categoryBool,
-                              tempCategoryBool, "Category", categoryList),
+                          NotiAndCategory(specifiC, specBool, "Specifications",
+                              specifyList),
+                          NotiAndCategory(categoryC, categoryBool, "Category",
+                              categoryList),
                           TextField(
                             controller: nameC,
                             decoration: InputDecoration(
@@ -325,7 +325,6 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                 showToast("Updating...", context);
 
                                 final Map<String, Object> m = Map();
-
                                 m.putIfAbsent("Bank Account Name",
                                     () => accNameC.text.toString());
                                 m.putIfAbsent("Bank Account Number",
@@ -342,22 +341,15 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                 m.putIfAbsent(
                                     "Specifications", () => specTempList);
 
-                                /*        db
+                                Firestore.instance
                                     .collection("Mechanics")
-                                    .document(Uid_)
-                                    .update(m);
-                                db.collection("All").document(Uid_).update(m);
+                                    .document(mUID)
+                                    .updateData(m);
+                                Firestore.instance
+                                    .collection("All")
+                                    .document(mUID)
+                                    .updateData(m);
 
-                                  Firestore.instance.collection("Mechanics").document(mUID).setData({
-          "ID": user.uid,
-          "Name": user.displayName,
-          "Picture": user.photoUrl
-        });
-         Firestore.instance.collection("All").document(mUID).setData({
-          "ID": user.uid,
-          "Name": user.displayName,
-          "Picture": user.photoUrl
-        });*/
                                 if (_mainPicture != null) {}
                                 if (_previous1 != null) {}
                                 if (_previous2 != null) {}

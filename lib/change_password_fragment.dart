@@ -5,7 +5,6 @@ import 'package:mechapp/utils/type_constants.dart';
 
 import 'libraries/custom_button.dart';
 import 'libraries/toast.dart';
-import 'log_in.dart';
 
 class ChangePasswordF extends StatefulWidget {
   @override
@@ -23,42 +22,25 @@ class _ChangePasswordFState extends State<ChangePasswordF> {
     setState(() {
       isLoading = true;
     });
-    AuthResult result = await _firebaseAuth
-        .signInWithEmailAndPassword(email: mEmail, password: password)
-        .catchError((err) {
+
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+
+    user.updatePassword(password).then((_) {
+      showMiddleToast("Succesfully changed password", context);
+      oldPass.clear();
+      new1Pass.clear();
+      new2Pass.clear();
       setState(() {
         isLoading = false;
       });
-      print(err.toString());
-      showToast("error getting user " + err.toString(), context);
-
-      return;
-    }).then((value) async {
-      await value.user.updatePassword(password).then((_) {
-        showToast("Succesfully changed password", context);
-
-        oldPass.clear();
-        new1Pass.clear();
-        new2Pass.clear();
-        setState(() {
-          isLoading = false;
-        });
-        return true;
-      }).catchError((error) {
-        showToast("Password can't be changed" + error.toString(), context);
-        setState(() {
-          isLoading = false;
-        });
-        return true;
+      return true;
+    }).catchError((error) {
+      showMiddleToast("Password can't be changed" + error.toString(), context);
+      setState(() {
+        isLoading = false;
       });
-      return;
+      return true;
     });
-    //FirebaseUser user = result.user;
-
-    setState(() {
-      theText = mEmail;
-    });
-    // FirebaseUser user = await FirebaseAuth.instance.currentUser();
   }
 
   String theText = mEmail;
@@ -118,7 +100,7 @@ class _ChangePasswordFState extends State<ChangePasswordF> {
                       title: isLoading ? "" : "Change Password",
                       onPress: isLoading
                           ? null
-                          : () {
+                          : () async {
                               if (oldPass.text.toString().isEmpty) {
                                 showEmptyToast("Old Password", context);
                                 return;
@@ -144,8 +126,6 @@ class _ChangePasswordFState extends State<ChangePasswordF> {
                                 return;
                               }
                               _changePassword(new1Pass.text.toString());
-                              //  Navigator.pop(context);
-
                               CircularProgressIndicator();
                             },
                       icon: isLoading

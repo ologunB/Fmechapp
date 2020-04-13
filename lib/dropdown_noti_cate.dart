@@ -4,17 +4,17 @@ import 'package:mechapp/libraries/custom_button.dart';
 
 class NotiAndCategory extends StatefulWidget {
   TextEditingController controller;
-  List boolList, tempBoolList, valueList;
-  String type;
+  List boolList, valueList;
+  final String type;
 
-  NotiAndCategory(this.controller, this.boolList, this.tempBoolList, this.type,
-      this.valueList);
+  NotiAndCategory(this.controller, this.boolList, this.type, this.valueList);
 
   @override
   _NotiAndCategoryState createState() => _NotiAndCategoryState();
 }
 
 class _NotiAndCategoryState extends State<NotiAndCategory> {
+  List<bool> tempBoolList = List();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,7 +43,7 @@ class _NotiAndCategoryState extends State<NotiAndCategory> {
                       child: ListView.builder(
                         itemCount: widget.valueList.length,
                         itemBuilder: (context, index) {
-                          widget.tempBoolList = widget.boolList;
+                          tempBoolList = widget.boolList;
                           return Padding(
                             padding: EdgeInsets.all(5.0),
                             child: Material(
@@ -87,7 +87,7 @@ class _NotiAndCategoryState extends State<NotiAndCategory> {
                             child: FlatButton(
                               onPressed: () {
                                 setState(() {
-                                  widget.boolList = widget.tempBoolList;
+                                  widget.boolList = tempBoolList;
                                 });
                                 Navigator.of(context).pop();
                               },

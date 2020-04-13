@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mechapp/each_service.dart';
+import 'package:mechapp/utils/type_constants.dart';
+import 'package:mechapp/view_mech_profile.dart';
 
 import 'libraries/carousel_slider.dart';
 
@@ -81,7 +83,9 @@ class _HomeFragmentState extends State<HomeFragment> {
   }
 
   List<EachMechanic> mechList = [];
+  List<EachMechanic> sortedList = [];
   bool showService = true;
+  bool showSearch = false;
 
   Future<List<EachMechanic>> getAllMechanics() async {
     DatabaseReference dataRef =
@@ -116,7 +120,9 @@ class _HomeFragmentState extends State<HomeFragment> {
             descrpt: tempDescription,
             image: tempImage,
             specs: specs,
-            categories: cat));
+            categories: cat,
+            mLat: tempLatPos,
+            mLong: tempLongPos));
       }
     });
     return mechList;
@@ -133,17 +139,34 @@ class _HomeFragmentState extends State<HomeFragment> {
   }
 
   void onSearchMechanic(String val) {
-    val = val.trim();
-    if (val.isNotEmpty) {
-      setState(() {
-        showService = false;
-      });
+    if (mechList != null) {
+      val = val.trim();
+      if (val.isNotEmpty) {
+        List<EachMechanic> _tempList = [];
+        for (EachMechanic item in mechList) {
+          if (item.name.contains(val)) {
+            _tempList.add(item);
+          }
+        }
+        setState(() {
+          showService = false;
+          showSearch = true;
+          textAllot = "Found Mechanics";
+          sortedList = _tempList;
+        });
+      } else {
+        setState(() {
+          showService = true;
+          showSearch = false;
+          textAllot = "Services";
+        });
+      }
     } else {
-      setState(() {
-        showService = true;
-      });
+      showToast("Geting mechanics", context);
     }
   }
+
+  String textAllot = "Services";
 
   @override
   Widget build(BuildContext context) {
@@ -173,51 +196,52 @@ class _HomeFragmentState extends State<HomeFragment> {
                 return Builder(
                   builder: (context) {
                     return Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          color: Colors.black38,
-                          backgroundBlendMode: BlendMode.dstOut,
-                          borderRadius: BorderRadius.all(Radius.circular(15.0)),
-                          image: DecorationImage(
-                            image: AssetImage(""),
-                            fit: BoxFit.fill,
-                          ),
+                      width: MediaQuery.of(context).size.width,
+                      margin: EdgeInsets.symmetric(horizontal: 5.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black38,
+                        backgroundBlendMode: BlendMode.dstOut,
+                        borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                        image: DecorationImage(
+                          image: AssetImage(""),
+                          fit: BoxFit.fill,
                         ),
-                        child: Stack(
-                          children: <Widget>[
-                            Align(
-                              child: Image(
-                                image: AssetImage(i),
-                                fit: BoxFit.fill,
-                                color: Colors.black38,
-                                colorBlendMode: BlendMode.dstOut,
-                              ),
+                      ),
+                      child: Stack(
+                        children: <Widget>[
+                          Align(
+                            child: Image(
+                              image: AssetImage(i),
+                              fit: BoxFit.fill,
+                              color: Colors.black38,
+                              colorBlendMode: BlendMode.dstOut,
                             ),
-                            Align(
-                              alignment: Alignment.bottomLeft,
-                              child: ListTile(
-                                title: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "",
-                                    style: TextStyle(
-                                        backgroundColor: Colors.blueAccent,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white),
-                                  ),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomLeft,
+                            child: ListTile(
+                              title: Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  "",
+                                  style: TextStyle(
+                                      backgroundColor: Colors.blueAccent,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white),
                                 ),
-                                subtitle: Text("",
-                                    style: TextStyle(
-                                        backgroundColor: Colors.white,
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.blueAccent)),
                               ),
-                            )
-                          ],
-                        ));
+                              subtitle: Text("",
+                                  style: TextStyle(
+                                      backgroundColor: Colors.white,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.blueAccent)),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
                   },
                 );
               }).toList(),
@@ -271,69 +295,173 @@ class _HomeFragmentState extends State<HomeFragment> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              "Services",
+              textAllot,
               style: TextStyle(
                   fontSize: 20, color: Colors.red, fontWeight: FontWeight.w700),
             ),
           ),
-          Visibility(
-            visible: showService,
-            child: Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black12)],
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  child: GridView.builder(
-                      shrinkWrap: true,
-                      itemCount: httpServicesList.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) => EachService(
-                                  title: httpServicesList[index].typeTitle,
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Colors.black12)],
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 11),
+                child: Stack(
+                  children: <Widget>[
+                    Visibility(
+                      visible: showService,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        itemCount: httpServicesList.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (context) => EachService(
+                                    title: httpServicesList[index].typeTitle,
+                                  ),
                                 ),
+                              );
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.all(0.0),
+                              child: Column(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          httpServicesList[index].typeImageUrl,
+                                      height: 40,
+                                      width: 40,
+                                      placeholder: (context, url) =>
+                                          CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                    ),
+                                  ),
+                                  Center(
+                                    child: Text(
+                                      httpServicesList[index].typeTitle,
+                                      style: TextStyle(
+                                          fontSize: 20, color: primaryColor),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(0.0),
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl:
-                                        httpServicesList[index].typeImageUrl,
-                                    height: 40,
-                                    width: 40,
-                                    placeholder: (context, url) =>
-                                        CircularProgressIndicator(),
-                                    errorWidget: (context, url, error) =>
-                                        Icon(Icons.error),
-                                  ),
-                                ),
-                                Center(
-                                  child: Text(
-                                    httpServicesList[index].typeTitle,
-                                    style: TextStyle(
-                                        fontSize: 20, color: primaryColor),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
                             ),
-                          ),
-                        );
-                      },
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3)),
+                          );
+                        },
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3),
+                      ),
+                    ),
+                    Visibility(
+                      visible: showSearch,
+                      child: ListView.builder(
+                        itemCount: sortedList.length,
+                        itemBuilder: (context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (context) => ViewMechProfile(
+                                    mechanic: sortedList[index],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black12)
+                                    ],
+                                    borderRadius: BorderRadius.circular(15)),
+                                child: Center(
+                                    child: ListTile(
+                                  subtitle: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.call,
+                                            color: primaryColor,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Text(
+                                              sortedList[index].phoneNumber,
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black54),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.message,
+                                            color: primaryColor,
+                                          ),
+                                        ],
+                                      ),
+/*
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: .0),
+                                    child: Text(
+                                      "4.5KM Away",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black54),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+*/
+                                    ],
+                                  ),
+                                  title: Text(
+                                    sortedList[index].name,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black),
+                                  ),
+                                  leading: CachedNetworkImage(
+                                    imageUrl: sortedList[index].image,
+                                    height: 48,
+                                    width: 48,
+                                    placeholder: (context, url) => Image(
+                                      image: AssetImage(
+                                          "assets/images/person.png"),
+                                    ),
+                                    errorWidget: (context, url, error) => Image(
+                                      image: AssetImage(
+                                          "assets/images/person.png"),
+                                    ),
+                                  ),
+                                )),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  ],
                 ),
               ),
             ),
