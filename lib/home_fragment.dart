@@ -18,7 +18,7 @@ class HomeFragment extends StatefulWidget {
 }
 
 class EachMechanic {
-  final String id,
+  final String uid,
       name,
       locality,
       descrpt,
@@ -33,7 +33,7 @@ class EachMechanic {
   var mLat, mLong;
 
   EachMechanic(
-      {this.id,
+      {this.uid,
       this.name,
       this.locality,
       this.categories,
@@ -60,9 +60,10 @@ class _HomeFragmentState extends State<HomeFragment> {
   void initState() {
     super.initState();
     getUserLocation();
-    getAllMechanics();
+    getProfiles();
   }
 
+  bool closePresent = false;
   Future<Position> locateUser() async {
     return Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
@@ -100,76 +101,27 @@ class _HomeFragmentState extends State<HomeFragment> {
     return dATA;
   }
 
-  Stream<List<EachMechanic>> getAllMechanics() async* {
-    DatabaseReference dataRef =
-        FirebaseDatabase.instance.reference().child("Mechanic Collection");
-
-    await dataRef.once().then((snapshot) {
-      var kEYS = snapshot.value.keys;
-      var dATA = snapshot.value;
-
-      mechList.clear();
-      for (var index in kEYS) {
-        String tempName = dATA[index]['Company Name'];
-        String tempPhoneNumber = dATA[index]['Phone Number'];
-        String tempStreetName = dATA[index]['Street Name'];
-        String tempCity = dATA[index]['City'];
-        String tempLocality = dATA[index]['Locality'];
-        String tempDescription = dATA[index]['Description'];
-        String tempImage = dATA[index]['Image Url'];
-        String tempMechUid = dATA[index]['Mech Uid'];
-        String tempLongPos = dATA[index]['LOc Longitude'];
-        String tempLatPos = dATA[index]['LOc Latitude'];
-
-        List cat = dATA[index]["Categories"];
-        List specs = dATA[index]["Specifications"];
-        mechList.add(EachMechanic(
-            id: tempMechUid,
-            name: tempName,
-            locality: tempLocality,
-            phoneNumber: tempPhoneNumber,
-            streetName: tempStreetName,
-            city: tempCity,
-            descrpt: tempDescription,
-            image: tempImage,
-            specs: specs,
-            categories: cat,
-            mLat: tempLatPos,
-            mLong: tempLongPos));
-        print(tempLongPos.toString());
-      }
-    });
-    yield mechList;
-  }
-
-/*  List<EachMechanic> filteredByService(String service) {
-    List<EachMechanic> _tempList = [];
-    for (EachMechanic item in mechList) {
-      if (item.categories.contains(service)) {
-        _tempList.add(item);
-      }
-    }
-    return _tempList;
-  }*/
-
   void onSearchMechanic(String val) {
     if (mechList != null) {
       val = val.trim();
       if (val.isNotEmpty) {
-        List<EachMechanic> _tempList = [];
+        sortedList.clear();
         for (EachMechanic item in mechList) {
           if (item.name.toUpperCase().contains(val.toUpperCase())) {
-            _tempList.add(item);
+            sortedList.add(item);
+            print(sortedList[0].rating);
           }
         }
         setState(() {
+          closePresent = true;
           showService = false;
           showSearch = true;
           textServices = "Found Mechanics";
-          sortedList = _tempList;
         });
       } else {
         setState(() {
+          closePresent = false;
+
           showService = true;
           showSearch = false;
           textServices = "Services";
@@ -177,7 +129,7 @@ class _HomeFragmentState extends State<HomeFragment> {
         });
       }
     } else {
-      showToast("Geting mechanics", context);
+      showMiddleToast("Geting mechanics", context);
     }
   }
 
@@ -197,23 +149,27 @@ class _HomeFragmentState extends State<HomeFragment> {
               if (snapshot.connectionState == ConnectionState.done) {
                 var kEYS = dATA.keys;
 
+                print(dATA);
                 mechList.clear();
-                for (var index in kEYS) {
-                  String tempName = dATA[index]['Company Name'];
-                  String tempPhoneNumber = dATA[index]['Phone Number'];
-                  String tempStreetName = dATA[index]['Street Name'];
-                  String tempCity = dATA[index]['City'];
-                  String tempLocality = dATA[index]['Locality'];
-                  String tempDescription = dATA[index]['Description'];
-                  String tempImage = dATA[index]['Image Url'];
-                  String tempMechUid = dATA[index]['Mech Uid'];
-                  String tempLongPos = dATA[index]['LOc Longitude'].toString();
-                  String tempLatPos = dATA[index]['LOc Latitude'].toString();
+                for (var key in kEYS) {
+                  String tempName = dATA[key]['Company Name'];
+                  String tempPhoneNumber = dATA[key]['Phone Number'];
+                  String tempStreetName = dATA[key]['Street Name'];
+                  String tempCity = dATA[key]['City'];
+                  String tempLocality = dATA[key]['Locality'];
+                  String tempDescription = dATA[key]['Description'];
+                  String tempImage = dATA[key]['Image Url'];
+                  String tempMechUid = dATA[key]['Mech Uid'];
+                  String tempRating = dATA[key]['Rating'];
+                  var tempLongPos =
+                      double.parse(dATA[key]['LOc Longitude'].toString());
+                  var tempLatPos =
+                      double.parse(dATA[key]['Loc Latitude'].toString());
 
-                  List cat = dATA[index]["Categories"];
-                  List specs = dATA[index]["Specifications"];
+                  List cat = dATA[key]["Categories"];
+                  List specs = dATA[key]["Specifications"];
                   mechList.add(EachMechanic(
-                      id: tempMechUid,
+                      uid: tempMechUid,
                       name: tempName,
                       locality: tempLocality,
                       phoneNumber: tempPhoneNumber,
@@ -224,7 +180,8 @@ class _HomeFragmentState extends State<HomeFragment> {
                       specs: specs,
                       categories: cat,
                       mLat: tempLatPos,
-                      mLong: tempLongPos));
+                      mLong: tempLongPos,
+                      rating: tempRating));
                 }
                 return Container();
               }
@@ -340,9 +297,10 @@ class _HomeFragmentState extends State<HomeFragment> {
                       child: CupertinoTextField(
                         placeholder: "Search Mechanics...",
                         onChanged: onSearchMechanic,
+                        clearButtonMode: OverlayVisibilityMode.editing,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

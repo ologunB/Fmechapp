@@ -109,12 +109,11 @@ class _EachServiceState extends State<EachService>
             var tempLongPos =
                 double.parse(dATA[key]['LOc Longitude'].toString());
             var tempLatPos = double.parse(dATA[key]['Loc Latitude'].toString());
-            print(tempLatPos.toString() + tempLongPos.toString());
 
             List cat = dATA[key]["Categories"];
             List specs = dATA[key]["Specifications"];
             mechList.add(EachMechanic(
-                id: tempMechUid,
+                uid: tempMechUid,
                 name: tempName,
                 locality: tempLocality,
                 phoneNumber: tempPhoneNumber,
@@ -134,7 +133,7 @@ class _EachServiceState extends State<EachService>
           for (var i = 0; i < mechList.length; i++) {
             markers.add(
               Marker(
-                markerId: MarkerId(mechList[i].id),
+                markerId: MarkerId(mechList[i].uid),
                 position: LatLng(mechList[i].mLat, mechList[i].mLong),
                 infoWindow: InfoWindow(
                     title: mechList[i].name, snippet: mechList[i].streetName),

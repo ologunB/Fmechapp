@@ -116,7 +116,7 @@ class _NearbyFState extends State<NearbyF> {
             List cat = dATA[key]["Categories"];
             List specs = dATA[key]["Specifications"];
             mechList.add(EachMechanic(
-                id: tempMechUid,
+                uid: tempMechUid,
                 name: tempName,
                 locality: tempLocality,
                 phoneNumber: tempPhoneNumber,
@@ -137,7 +137,7 @@ class _NearbyFState extends State<NearbyF> {
           for (var i = 0; i < mechList.length; i++) {
             markers.add(
               Marker(
-                markerId: MarkerId(mechList[i].id),
+                markerId: MarkerId(mechList[i].uid),
                 position: LatLng(mechList[i].mLat, mechList[i].mLong),
                 infoWindow: InfoWindow(
                     title: mechList[i].name, snippet: mechList[i].streetName),

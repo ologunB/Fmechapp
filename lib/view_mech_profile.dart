@@ -25,7 +25,7 @@ class _ViewMechProfileState extends State<ViewMechProfile>
     DatabaseReference dataRef = FirebaseDatabase.instance
         .reference()
         .child("All Jobs Collection")
-        .child(widget.mechanic.id);
+        .child(widget.mechanic.uid);
 
     await dataRef.once().then((snapshot) {
       jobsDone = snapshot.value['Total Job'];
