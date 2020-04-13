@@ -15,6 +15,7 @@ dependencies:
   image_picker: #TODO configure for iOS later
   google_maps_flutter: ^0.5.24+1 #TODO configure for iOS later
   firebase_database:
+  firebase_storage:
   intent: ^1.1.0
   firebase_core: ^0.4.0+9
   firebase_auth: ^0.14.0+5

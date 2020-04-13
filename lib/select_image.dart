@@ -14,10 +14,10 @@ class SelectImage extends StatefulWidget {
 
 class _SelectImageState extends State<SelectImage> {
   Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var img = await ImagePicker.pickImage(source: ImageSource.gallery);
 
     setState(() {
-      widget.image = image;
+      widget.image = img;
     });
   }
 

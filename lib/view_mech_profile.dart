@@ -2,7 +2,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mechapp/home_fragment.dart';
-import 'package:mechapp/utils/type_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'libraries/custom_button.dart';
@@ -16,14 +15,17 @@ class ViewMechProfile extends StatefulWidget {
   _ViewMechProfileState createState() => _ViewMechProfileState();
 }
 
-class _ViewMechProfileState extends State<ViewMechProfile> {
+class _ViewMechProfileState extends State<ViewMechProfile>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   String jobsDone = "--";
 
   Future<String> getJobs() async {
     DatabaseReference dataRef = FirebaseDatabase.instance
         .reference()
         .child("All Jobs Collection")
-        .child(mUID);
+        .child(widget.mechanic.id);
 
     await dataRef.once().then((snapshot) {
       jobsDone = snapshot.value['Total Job'];
@@ -31,11 +33,12 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
     return jobsDone;
   }
 
+  bool jobVisibility = false;
+
   @override
   Widget build(BuildContext context) {
     Color primaryColor = Theme.of(context).primaryColor;
 
-    bool jobVisibility = false;
     return Scaffold(
       appBar: AppBar(
         title: Text("Mechanic"),
@@ -78,7 +81,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                           widget.mechanic.name,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              fontSize: 25,
+                              fontSize: 24,
                               color: Colors.black,
                               fontWeight: FontWeight.w900),
                         ),
@@ -144,7 +147,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                               Text(
                                 "Jobs Done:",
                                 style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     color: Colors.red,
                                     fontWeight: FontWeight.w700),
                               ),
@@ -158,7 +161,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                                         child: Text(
                                           jobsDone,
                                           style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 25,
                                               color: primaryColor,
                                               fontWeight: FontWeight.w700),
                                         ),
@@ -191,7 +194,7 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                                 child: Text(
                                   widget.mechanic.rating,
                                   style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 25,
                                       color: primaryColor,
                                       fontWeight: FontWeight.w700),
                                 ),
@@ -205,54 +208,56 @@ class _ViewMechProfileState extends State<ViewMechProfile> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        CustomButton(
-                          title: "Call Now",
-                          onPress: () {
-                            launch(
-                              "tel://${widget.mechanic.phoneNumber}",
-                            );
-                            setState(() {
-                              jobVisibility = true;
-                            });
-                          },
-                          icon: Icon(
-                            Icons.call,
-                            color: Colors.white,
-                          ),
-                        ),
-                        jobVisibility
-                            ? CustomButton(
-                                title: "Create Job",
-                                onPress: () {
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: true,
-                                    builder: (_) => CustomDialog(
-                                      title:
-                                          "Are you sure you have reached the mechanic before you proceed with further payment?",
-                                      onClicked: () {
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          CupertinoPageRoute(
-                                            builder: (context) =>
-                                                PayMechanicPage(
-                                              mechanic: widget.mechanic,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      includeHeader: true,
-                                    ),
-                                  );
-                                },
-                                icon: Icon(
-                                  Icons.done,
-                                  color: Colors.white,
+                        StatefulBuilder(builder: (context, _setState) {
+                          return CustomButton(
+                            title: "Call Now",
+                            onPress: () {
+                              _setState(() {
+                                jobVisibility = true;
+                              });
+                              launch(
+                                "tel://${widget.mechanic.phoneNumber}",
+                              );
+                            },
+                            icon: Icon(
+                              Icons.call,
+                              color: Colors.white,
+                            ),
+                          );
+                        }),
+                        Visibility(
+                          visible: jobVisibility,
+                          child: CustomButton(
+                            title: "Create Job",
+                            onPress: () {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (_) => CustomDialog(
+                                  title:
+                                      "Are you sure you have reached the mechanic before you proceed with further payment?",
+                                  onClicked: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      CupertinoPageRoute(
+                                        builder: (context) => PayMechanicPage(
+                                          mechanic: widget.mechanic,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  includeHeader: true,
                                 ),
-                                iconLeft: false,
-                              )
-                            : Container()
+                              );
+                            },
+                            icon: Icon(
+                              Icons.done,
+                              color: Colors.white,
+                            ),
+                            iconLeft: false,
+                          ),
+                        )
                       ],
                     ),
                   ],

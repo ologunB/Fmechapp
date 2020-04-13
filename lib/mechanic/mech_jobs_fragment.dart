@@ -2,7 +2,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mechapp/libraries/custom_dialog.dart';
-import 'package:mechapp/log_in.dart';
 import 'package:mechapp/utils/type_constants.dart';
 
 class JobModel {
@@ -128,7 +127,7 @@ class _MechJobsFState extends State<MechJobsF> {
                         );
                       },
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, childAspectRatio: 0.9),
+                          crossAxisCount: 2, childAspectRatio: 0.8),
                     ),
                   );
           }

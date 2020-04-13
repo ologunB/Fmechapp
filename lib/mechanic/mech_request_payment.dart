@@ -78,38 +78,42 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
                                 if (value.isEmpty) {
                                   return 'Amount cannot be empty!';
                                 } else if (value.length < 4) {
-                                  return 'Amount must be greater than 999!';
+                                  return 'Amount must be greater than ₦999!';
                                 } else if (double.parse(_amountC.text) >
                                     double.parse(t6)) {
-                                  return 'Amount cannot be greater than $t6!';
+                                  return 'Balance is ₦$t6!';
                                 }
                                 return null;
                               },
                             ),
                             SizedBox(height: 20),
-                            CustomButton(
-                              onPress: () {
-                                _formKey.currentState.save();
-                                _formKey.currentState.validate();
+                            StatefulBuilder(
+                              builder: (context, _setState) {
+                                return CustomButton(
+                                  onPress: () {
+                                    _formKey.currentState.save();
+                                    _formKey.currentState.validate();
 
-                                setState(() {
-                                  _autoValidate = true;
-                                });
+                                    _setState(() {
+                                      _autoValidate = true;
+                                    });
 
-                                if (_formKey.currentState.validate()) {
-                                  processRequest();
-                                  Toast.show("Request Made!", context,
-                                      duration: Toast.LENGTH_SHORT,
-                                      gravity: Toast.BOTTOM);
-                                }
+                                    if (_formKey.currentState.validate()) {
+                                      processRequest(_setState);
+                                      Toast.show("Request Made!", context,
+                                          duration: Toast.LENGTH_SHORT,
+                                          gravity: Toast.BOTTOM);
+                                    }
+                                  },
+                                  title: "REQUEST PAYMENT  ",
+                                  iconLeft: false,
+                                  icon: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                  ),
+                                );
                               },
-                              title: "REQUEST PAYMENT  ",
-                              iconLeft: false,
-                              icon: Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.white,
-                              ),
-                            ),
+                            )
                           ]),
                     ),
                   )),
@@ -126,7 +130,7 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
   TextEditingController _amountC = TextEditingController();
 
   bool _autoValidate = false;
-  void processRequest() {
+  void processRequest(_setState) {
     String amount = _amountC.toString().trim();
 
     final String ppA = (double.parse(t6) - double.parse(amount)).toString();
@@ -144,10 +148,10 @@ class _MechRequestPaymentState extends State<MechRequestPayment> {
     rootRef.child("Payment Request").child("Pending").child(mUID).set(pRequest);
     rootRef.child("All Jobs Collection").child(mUID).update(allJobs);
 
-  /*  setState(() {
+    _setState(() {
       t6 = ppA;
       t7 = pR;
-    });*/
+    });
   }
 
   @override

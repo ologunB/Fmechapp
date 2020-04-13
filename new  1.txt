@@ -24,3 +24,9 @@ solomom 10								228
 ay 34
 oye 150
 34.2
+
+mike 70 * 1.27
+Tola 37 * 1.25 
+Fola 40 * 1.25 
+Kunle 50 * 1.4 
+Mike friend 20 * 1.25 

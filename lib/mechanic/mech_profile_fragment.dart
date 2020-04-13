@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mechapp/dropdown_noti_cate.dart';
 import 'package:mechapp/libraries/custom_button.dart';
 import 'package:mechapp/libraries/toast.dart';
@@ -22,31 +25,18 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
   @override
   bool get wantKeepAlive => true;
   File _mainPicture, _previous1, _previous2;
-  var rootRef = FirebaseDatabase.instance.reference();
+  var rootRef = FirebaseDatabase.instance
+      .reference()
+      .child("Mechanic Collection")
+      .child(mUID);
+  var _storageRef = FirebaseStorage.instance.ref();
 
   Map dATA = {};
 
   Future<Map> getProfile() async {
-    DatabaseReference dataRef =
-        rootRef.child("Mechanic Collection").child(mUID);
-
-    await dataRef.once().then((snapshot) {
+    await rootRef.once().then((snapshot) {
       dATA = snapshot.value;
-
-/*      String t1 = DATA['Company Name'];
-      List<String> t2 = DATA['Specifications'];
-      List<String> t3 = DATA['Categories'];
-      String t4 = DATA['Phone Number'];
-      String t5 = DATA['Email'];
-      String t6 = DATA['City'];
-      String t7 = DATA['Locality'];
-      String t8 = DATA['Description'];
-      String t9 = DATA['Website Url'];
-      String t10 = DATA['Image Url'];
-      String t11 = DATA['PreviousImage1 Url'];
-      String t12 = DATA['PreviousImage2 Url'];*/
     });
-
     return dATA;
   }
 
@@ -65,6 +55,16 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
       specifiC;
   String profileImageUrl, pre1image, pre2image;
   List<bool> categoryBool, specBool;
+  bool isUpdating = false;
+
+  Future getImage(_setState) async {
+    var img = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    _setState(() {
+      _mainPicture = img;
+    });
+  }
+
   Widget _buildFutureBuilder(Color primaryColor) {
     return Center(
       child: FutureBuilder<Map>(
@@ -133,11 +133,50 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          SelectImage(
+                          StatefulBuilder(
+                            builder: (context, _setState) {
+                              return Container(
+                                height: 100,
+                                width: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(50.0),
+                                ),
+                                child: InkWell(
+                                  onTap: () {
+                                    getImage(_setState);
+                                  },
+                                  child: _mainPicture == null
+                                      ? CachedNetworkImage(
+                                          imageUrl: profileImageUrl,
+                                          height: 90,
+                                          width: 90,
+                                          placeholder: (context, url) => Image(
+                                              image: AssetImage(
+                                                  "assets/images/engineer.png"),
+                                              height: 90,
+                                              width: 90,
+                                              fit: BoxFit.contain),
+                                          errorWidget: (context, url, error) =>
+                                              Image(
+                                                  image: AssetImage(
+                                                      "assets/images/engineer.png"),
+                                                  height: 90,
+                                                  width: 90,
+                                                  fit: BoxFit.contain),
+                                        )
+                                      : Image.file(_mainPicture,
+                                          height: 90,
+                                          width: 90,
+                                          fit: BoxFit.contain),
+                                ),
+                              );
+                            },
+                          ),
+                          /*    SelectImage(
                             url: profileImageUrl,
                             defaultUrl: "assets/images/engineer.png",
                             image: _mainPicture,
-                          ),
+                          ),*/
                           NotiAndCategory(specifiC, specBool, "Specifications",
                               specifyList),
                           NotiAndCategory(categoryC, categoryBool, "Category",
@@ -284,90 +323,164 @@ class _MechProfileFragmentState extends State<MechProfileFragment>
                                 labelStyle: TextStyle(color: Colors.blue)),
                             style: TextStyle(fontSize: 18),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CustomButton(
-                              title: "   Update   ",
-                              onPress: () async {
-                                if (phoneNo.text.toString().isEmpty) {
-                                  showEmptyToast("Phone Number", context);
-                                  return;
-                                }
-                                if (!categoryBool.contains(true)) {
-                                  showToast(
-                                      "A Category must be selected", context);
-                                  return;
-                                }
-                                if (!specBool.contains(true)) {
-                                  showToast("A Specification must be selected",
-                                      context);
-                                  return;
-                                }
+                          StatefulBuilder(
+                            builder: (context, _setState) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CustomButton(
+                                  title: isUpdating
+                                      ? "  Updating  "
+                                      : "   Update   ",
+                                  onPress: isUpdating
+                                      ? null
+                                      : () async {
+                                          if (phoneNo.text.toString().isEmpty) {
+                                            showEmptyToast(
+                                                "Phone Number", context);
+                                            return;
+                                          }
+                                          if (!categoryBool.contains(true)) {
+                                            showToast(
+                                                "A Category must be selected",
+                                                context);
+                                            return;
+                                          }
+                                          if (!specBool.contains(true)) {
+                                            showToast(
+                                                "A Specification must be selected",
+                                                context);
+                                            return;
+                                          }
+                                          _setState(() {
+                                            isUpdating = true;
+                                          });
 
-                                List<String> specTempList = [];
-                                int intA = 0;
-                                for (bool item in specBool) {
-                                  if (item == true) {
-                                    specTempList.add(specifyList[intA]);
-                                  }
-                                  intA++;
-                                }
+                                          List<String> specTempList = [];
+                                          int intA = 0;
+                                          for (bool item in specBool) {
+                                            if (item == true) {
+                                              specTempList
+                                                  .add(specifyList[intA]);
+                                            }
+                                            intA++;
+                                          }
 
-                                List<String> cateTempList = [];
-                                int intB = 0;
-                                for (bool item in categoryBool) {
-                                  if (item == true) {
-                                    cateTempList.add(categoryList[intB]);
-                                  }
-                                  intB++;
-                                }
+                                          List<String> cateTempList = [];
+                                          int intB = 0;
+                                          for (bool item in categoryBool) {
+                                            if (item == true) {
+                                              cateTempList
+                                                  .add(categoryList[intB]);
+                                            }
+                                            intB++;
+                                          }
 
-                                showToast("Updating...", context);
+                                          //   showToast("Updating...", context);
 
-                                final Map<String, Object> m = Map();
-                                m.putIfAbsent("Bank Account Name",
-                                    () => accNameC.text.toString());
-                                m.putIfAbsent("Bank Account Number",
-                                    () => accNumC.text.toString());
-                                m.putIfAbsent("Bank Name",
-                                    () => bankNameC.text.toString());
-                                m.putIfAbsent("Phone Number",
-                                    () => phoneNo.text.toString());
-                                m.putIfAbsent("Description",
-                                    () => descptC.text.toString());
-                                m.putIfAbsent("Website Url",
-                                    () => companyWebC.text.toString());
-                                m.putIfAbsent("Categories", () => cateTempList);
-                                m.putIfAbsent(
-                                    "Specifications", () => specTempList);
+                                          final Map<String, Object> m = Map();
+                                          m.putIfAbsent("Bank Account Name",
+                                              () => accNameC.text.toString());
+                                          m.putIfAbsent("Bank Account Number",
+                                              () => accNumC.text.toString());
+                                          m.putIfAbsent("Bank Name",
+                                              () => bankNameC.text.toString());
+                                          m.putIfAbsent("Phone Number",
+                                              () => phoneNo.text.toString());
+                                          m.putIfAbsent("Description",
+                                              () => descptC.text.toString());
+                                          m.putIfAbsent(
+                                              "Website Url",
+                                              () =>
+                                                  companyWebC.text.toString());
+                                          m.putIfAbsent(
+                                              "Categories", () => cateTempList);
+                                          m.putIfAbsent("Specifications",
+                                              () => specTempList);
 
-                                Firestore.instance
-                                    .collection("Mechanics")
-                                    .document(mUID)
-                                    .updateData(m);
-                                Firestore.instance
-                                    .collection("All")
-                                    .document(mUID)
-                                    .updateData(m);
+                                          Firestore.instance
+                                              .collection("Mechanics")
+                                              .document(mUID)
+                                              .updateData(m);
+                                          Firestore.instance
+                                              .collection("All")
+                                              .document(mUID)
+                                              .updateData(m);
 
-                                if (_mainPicture != null) {}
-                                if (_previous1 != null) {}
-                                if (_previous2 != null) {}
-                                rootRef
-                                    .child("Mechanic Collection")
-                                    .child(mUID)
-                                    .update(m)
-                                    .then((value) => () {
-                                          Toast.show("Updated!", context,
-                                              duration: Toast.LENGTH_LONG,
-                                              gravity: Toast.CENTER);
-                                        });
-                              },
-                              icon: Icon(
-                                Icons.done,
-                                color: Colors.white,
-                              ),
-                            ),
+                                          showMiddleToast(
+                                              _mainPicture.toString(), context);
+
+                                          if (_mainPicture != null) {
+                                            StorageReference reference =
+                                                _storageRef.child(
+                                                    "images/${randomString()}");
+
+                                            StorageUploadTask uploadTask =
+                                                reference.putFile(_mainPicture);
+                                            StorageTaskSnapshot downloadUrl =
+                                                (await uploadTask.onComplete);
+                                            String url = (await downloadUrl.ref
+                                                .getDownloadURL());
+
+                                            rootRef.update({"Image Url": url});
+                                            _setState(() {
+                                              isUpdating = false;
+                                            });
+                                          }
+                                          if (_previous1 != null) {
+                                            StorageReference reference =
+                                                _storageRef.child(
+                                                    "images/${randomString()}");
+
+                                            StorageUploadTask uploadTask =
+                                                reference.putFile(_previous1);
+                                            StorageTaskSnapshot downloadUrl =
+                                                (await uploadTask.onComplete);
+                                            String url = (await downloadUrl.ref
+                                                .getDownloadURL());
+
+                                            rootRef.update(
+                                                {"PreviousImage1 Url": url});
+                                            _setState(() {
+                                              isUpdating = false;
+                                            });
+                                          }
+                                          if (_previous2 != null) {
+                                            StorageReference reference =
+                                                _storageRef.child(
+                                                    "images/${randomString()}");
+
+                                            StorageUploadTask uploadTask =
+                                                reference.putFile(_previous2);
+                                            StorageTaskSnapshot downloadUrl =
+                                                (await uploadTask.onComplete);
+                                            String url = (await downloadUrl.ref
+                                                .getDownloadURL());
+
+                                            rootRef.update(
+                                                {"PreviousImage2 Url": url});
+                                            _setState(() {
+                                              isUpdating = false;
+                                            });
+                                          }
+                                          rootRef.update(m).then((value) => () {
+                                                Toast.show("Updated!", context,
+                                                    duration: Toast.LENGTH_LONG,
+                                                    gravity: Toast.CENTER);
+                                                _setState(() {
+                                                  isUpdating = false;
+                                                });
+                                              });
+                                        },
+                                  icon: isUpdating
+                                      ? CircularProgressIndicator(
+                                          backgroundColor: Colors.white)
+                                      : Icon(
+                                          Icons.done,
+                                          color: Colors.white,
+                                        ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

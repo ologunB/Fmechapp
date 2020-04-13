@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mechapp/utils/type_constants.dart';
 
 import 'libraries/custom_button.dart';
 import 'libraries/toast.dart';
-import 'log_in.dart';
 
 class AddCarActivity extends StatefulWidget {
   @override
@@ -64,27 +64,26 @@ class _AddCarActivityState extends State<AddCarActivity>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      InkWell(
-                        onTap: () {
-                          getImage();
-                        },
-                        child: _carImage == null
-                            ? Container(
-                                width: 100.0,
-                                height: 100.0,
-                                decoration: new BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: new DecorationImage(
-                                    fit: BoxFit.fill,
-                                    image: AssetImage(
-                                        "assets/images/add_camera.png"),
-                                  ),
-                                ),
-                              )
-                            : Image.file(_carImage,
-                                width: 100.0,
-                                height: 100.0,
-                                fit: BoxFit.contain),
+                      Container(
+                        height: 100,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            getImage();
+                          },
+                          child: _carImage == null
+                              ? Image(
+                                  image: AssetImage(
+                                      "assets/images/add_camera.png"),
+                                  height: 90,
+                                  width: 90,
+                                  fit: BoxFit.contain)
+                              : Image.file(_carImage,
+                                  height: 90, width: 90, fit: BoxFit.contain),
+                        ),
                       ),
                       TextField(
                         decoration:
@@ -126,46 +125,90 @@ class _AddCarActivityState extends State<AddCarActivity>
                               ),
                             ),
                             CustomButton(
-                              title: isLoading ? "" : "Add Car",
-                              onPress: () {
-                                if (_carModel.text.toString().isEmpty) {
-                                  showEmptyToast("Car Model", context);
-                                  return;
-                                } else if (_carMake.text.toString().isEmpty) {
-                                  showEmptyToast("Car Make", context);
-                                  return;
-                                } else if (_carRegNum.text.toString().isEmpty) {
-                                  showEmptyToast("Car Reg. Number", context);
-                                  return;
-                                } else if (_carDate.text.toString().isEmpty) {
-                                  showEmptyToast("Car Date", context);
-                                  return;
-                                }
+                              title: isLoading ? "Adding" : "Add Car",
+                              onPress: isLoading
+                                  ? null
+                                  : () async {
+                                      if (_carModel.text.toString().isEmpty) {
+                                        showEmptyToast("Car Model", context);
+                                        return;
+                                      } else if (_carMake.text
+                                          .toString()
+                                          .isEmpty) {
+                                        showEmptyToast("Car Make", context);
+                                        return;
+                                      } else if (_carRegNum.text
+                                          .toString()
+                                          .isEmpty) {
+                                        showEmptyToast(
+                                            "Car Reg. Number", context);
+                                        return;
+                                      } else if (_carDate.text
+                                          .toString()
+                                          .isEmpty) {
+                                        showEmptyToast("Car Date", context);
+                                        return;
+                                      }
 
-                                carsReference.child(randomString()).set({
-                                  'car_brand': _carMake.text,
-                                  'car_model': _carModel.text,
-                                  'car_date': _carDate.text,
-                                  'car_num': _carRegNum.text,
-                                  'car_image': "img"
-                                }).then((_) {
-                                  // Navigator.pop(context);
+                                      setState(() {
+                                        isLoading = true;
+                                      });
 
-                                  /*  showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return CircularProgressIndicator();
-                                      });*/
+                                      if (_carImage == null) {
+                                        carsReference
+                                            .child(randomString())
+                                            .set({
+                                          'car_brand': _carMake.text,
+                                          'car_model': _carModel.text,
+                                          'car_date': _carDate.text,
+                                          'car_num': _carRegNum.text,
+                                          'car_image': "img"
+                                        }).then((_) {
+                                          Navigator.pop(context);
 
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  Toast.show("Car added Successfully", context,
-                                      duration: Toast.LENGTH_SHORT,
-                                      gravity: Toast.BOTTOM);
-                                });
-                                Navigator.pop(context);
-                              },
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                          Toast.show(
+                                              "Car added Successfully", context,
+                                              duration: Toast.LENGTH_SHORT,
+                                              gravity: Toast.BOTTOM);
+                                        });
+                                      } else {
+                                        StorageReference reference =
+                                            FirebaseStorage.instance
+                                                .ref()
+                                                .child(
+                                                    "images/${randomString()}");
+
+                                        StorageUploadTask uploadTask =
+                                            reference.putFile(_carImage);
+                                        StorageTaskSnapshot downloadUrl =
+                                            (await uploadTask.onComplete);
+                                        String url = (await downloadUrl.ref
+                                            .getDownloadURL());
+
+                                        carsReference
+                                            .child(randomString())
+                                            .set({
+                                          'car_brand': _carMake.text,
+                                          'car_model': _carModel.text,
+                                          'car_date': _carDate.text,
+                                          'car_num': _carRegNum.text,
+                                          'car_image': url
+                                        }).then((_) {
+                                          Navigator.pop(context);
+
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                          Toast.show(
+                                              "Car added Successfully", context,
+                                              duration: Toast.LENGTH_SHORT,
+                                              gravity: Toast.BOTTOM);
+                                        });
+                                      }
+                                    },
                               icon: isLoading
                                   ? CircularProgressIndicator(
                                       backgroundColor: Colors.white,

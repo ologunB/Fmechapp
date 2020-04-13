@@ -16,7 +16,10 @@ class EachService extends StatefulWidget {
   _EachServiceState createState() => _EachServiceState();
 }
 
-class _EachServiceState extends State<EachService> {
+class _EachServiceState extends State<EachService>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   List<EachMechanic> mechList = [];
   Map dATA = {};
   LatLng locationCoordinates;

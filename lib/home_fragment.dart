@@ -60,6 +60,7 @@ class _HomeFragmentState extends State<HomeFragment> {
   void initState() {
     super.initState();
     getUserLocation();
+    getAllMechanics();
   }
 
   Future<Position> locateUser() async {
@@ -87,7 +88,19 @@ class _HomeFragmentState extends State<HomeFragment> {
   bool showService = true;
   bool showSearch = false;
 
-  Future<List<EachMechanic>> getAllMechanics() async {
+  var rootRef =
+      FirebaseDatabase.instance.reference().child("Mechanic Collection");
+
+  Map dATA = {};
+
+  Future<Map> getProfiles() async {
+    await rootRef.once().then((snapshot) {
+      dATA = snapshot.value;
+    });
+    return dATA;
+  }
+
+  Stream<List<EachMechanic>> getAllMechanics() async* {
     DatabaseReference dataRef =
         FirebaseDatabase.instance.reference().child("Mechanic Collection");
 
@@ -123,12 +136,13 @@ class _HomeFragmentState extends State<HomeFragment> {
             categories: cat,
             mLat: tempLatPos,
             mLong: tempLongPos));
+        print(tempLongPos.toString());
       }
     });
-    return mechList;
+    yield mechList;
   }
 
-  List<EachMechanic> filteredByService(String service) {
+/*  List<EachMechanic> filteredByService(String service) {
     List<EachMechanic> _tempList = [];
     for (EachMechanic item in mechList) {
       if (item.categories.contains(service)) {
@@ -136,7 +150,7 @@ class _HomeFragmentState extends State<HomeFragment> {
       }
     }
     return _tempList;
-  }
+  }*/
 
   void onSearchMechanic(String val) {
     if (mechList != null) {
@@ -144,21 +158,22 @@ class _HomeFragmentState extends State<HomeFragment> {
       if (val.isNotEmpty) {
         List<EachMechanic> _tempList = [];
         for (EachMechanic item in mechList) {
-          if (item.name.contains(val)) {
+          if (item.name.toUpperCase().contains(val.toUpperCase())) {
             _tempList.add(item);
           }
         }
         setState(() {
           showService = false;
           showSearch = true;
-          textAllot = "Found Mechanics";
+          textServices = "Found Mechanics";
           sortedList = _tempList;
         });
       } else {
         setState(() {
           showService = true;
           showSearch = false;
-          textAllot = "Services";
+          textServices = "Services";
+          FocusScope.of(context).unfocus();
         });
       }
     } else {
@@ -166,7 +181,7 @@ class _HomeFragmentState extends State<HomeFragment> {
     }
   }
 
-  String textAllot = "Services";
+  String textServices = "Services";
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +191,46 @@ class _HomeFragmentState extends State<HomeFragment> {
       color: primaryColor,
       child: Column(
         children: <Widget>[
+          FutureBuilder(
+            future: getProfiles(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                var kEYS = dATA.keys;
+
+                mechList.clear();
+                for (var index in kEYS) {
+                  String tempName = dATA[index]['Company Name'];
+                  String tempPhoneNumber = dATA[index]['Phone Number'];
+                  String tempStreetName = dATA[index]['Street Name'];
+                  String tempCity = dATA[index]['City'];
+                  String tempLocality = dATA[index]['Locality'];
+                  String tempDescription = dATA[index]['Description'];
+                  String tempImage = dATA[index]['Image Url'];
+                  String tempMechUid = dATA[index]['Mech Uid'];
+                  String tempLongPos = dATA[index]['LOc Longitude'].toString();
+                  String tempLatPos = dATA[index]['LOc Latitude'].toString();
+
+                  List cat = dATA[index]["Categories"];
+                  List specs = dATA[index]["Specifications"];
+                  mechList.add(EachMechanic(
+                      id: tempMechUid,
+                      name: tempName,
+                      locality: tempLocality,
+                      phoneNumber: tempPhoneNumber,
+                      streetName: tempStreetName,
+                      city: tempCity,
+                      descrpt: tempDescription,
+                      image: tempImage,
+                      specs: specs,
+                      categories: cat,
+                      mLat: tempLatPos,
+                      mLong: tempLongPos));
+                }
+                return Container();
+              }
+              return Container();
+            },
+          ),
           Padding(
             padding: EdgeInsets.only(bottom: 8, left: 8.0, right: 8.0),
             child: CarouselSlider(
@@ -295,7 +350,7 @@ class _HomeFragmentState extends State<HomeFragment> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              textAllot,
+              textServices,
               style: TextStyle(
                   fontSize: 20, color: Colors.red, fontWeight: FontWeight.w700),
             ),
@@ -373,7 +428,7 @@ class _HomeFragmentState extends State<HomeFragment> {
                                 context,
                                 CupertinoPageRoute(
                                   builder: (context) => ViewMechProfile(
-                                    mechanic: sortedList[index],
+                                    mechanic: mechList[index],
                                   ),
                                 ),
                               );
