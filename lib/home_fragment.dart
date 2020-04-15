@@ -5,7 +5,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mechapp/each_service.dart';
 import 'package:mechapp/utils/type_constants.dart';
 import 'package:mechapp/view_mech_profile.dart';
@@ -28,6 +27,7 @@ class EachMechanic {
       jobsDone,
       city,
       rating,
+      dBtwn,
       streetName;
   List categories, specs;
   var mLat, mLong;
@@ -46,15 +46,13 @@ class EachMechanic {
       this.mLat,
       this.city,
       this.mLong,
+      this.dBtwn,
       this.rating,
       this.streetName});
 }
 
 class _HomeFragmentState extends State<HomeFragment> {
   var theAddress = "---";
-
-  LatLng locationCoordinates;
-  Position currentLocation;
 
   @override
   void initState() {
@@ -71,10 +69,6 @@ class _HomeFragmentState extends State<HomeFragment> {
 
   getUserLocation() async {
     currentLocation = await locateUser();
-    setState(() {
-      locationCoordinates =
-          LatLng(currentLocation.latitude, currentLocation.longitude);
-    });
 
     List<Placemark> placeMark = await Geolocator().placemarkFromCoordinates(
         currentLocation.latitude, currentLocation.longitude);

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,11 +18,9 @@ class NearbyF extends StatefulWidget {
 
 class _NearbyFState extends State<NearbyF> {
   List<EachMechanic> mechList = [];
-  List<EachMechanic> filteredList = [];
+  //List<EachMechanic> filteredList = [];
 
   Map dATA = {};
-  LatLng locationCoordinates;
-  Position currentLocation;
   GoogleMapController mapController;
   List<Marker> markers = <Marker>[];
 
@@ -34,6 +34,7 @@ class _NearbyFState extends State<NearbyF> {
     return dATA;
   }
 
+/*
   Future<List<EachMechanic>> filteredByDistance(Position myPos) async {
     for (EachMechanic item in mechList) {
       await Geolocator()
@@ -48,6 +49,7 @@ class _NearbyFState extends State<NearbyF> {
     }
     return filteredList;
   }
+*/
 
   LatLng _center = const LatLng(7.3034138, 5.143012800000008);
 
@@ -67,12 +69,6 @@ class _NearbyFState extends State<NearbyF> {
   }
 
   getUserLocation() async {
-    currentLocation = await locateUser();
-    setState(() {
-      locationCoordinates =
-          LatLng(currentLocation.latitude, currentLocation.longitude);
-    });
-
     List<Placemark> placeMark = await Geolocator().placemarkFromCoordinates(
         currentLocation.latitude, currentLocation.longitude);
 
@@ -112,10 +108,17 @@ class _NearbyFState extends State<NearbyF> {
             var tempLongPos =
                 double.parse(dATA[key]['LOc Longitude'].toString());
             var tempLatPos = double.parse(dATA[key]['Loc Latitude'].toString());
-
+            String tempDBtwn = calculateDistance(
+                    currentLocation.latitude,
+                    currentLocation.longitude,
+                    tempLatPos.toDouble(),
+                    tempLongPos.toDouble())
+                .toString();
+            //  Future.delayed(Duration(milliseconds: 500));
             List cat = dATA[key]["Categories"];
             List specs = dATA[key]["Specifications"];
             mechList.add(EachMechanic(
+                dBtwn: tempDBtwn,
                 uid: tempMechUid,
                 name: tempName,
                 locality: tempLocality,
@@ -130,9 +133,6 @@ class _NearbyFState extends State<NearbyF> {
                 mLat: tempLatPos,
                 mLong: tempLongPos));
           }
-
-          filteredByDistance(currentLocation);
-          mechList = filteredList;
 
           for (var i = 0; i < mechList.length; i++) {
             markers.add(
@@ -235,7 +235,7 @@ class _NearbyFState extends State<NearbyF> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: .0),
                                         child: Text(
-                                          "4.5KM Away",
+                                          " ${mechList[index].dBtwn}  KM Away",
                                           style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.w500,
@@ -281,6 +281,15 @@ class _NearbyFState extends State<NearbyF> {
         return Center(child: CircularProgressIndicator());
       },
     );
+  }
+
+  static int calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return (12742 * asin(sqrt(a))).toInt();
   }
 
   @override

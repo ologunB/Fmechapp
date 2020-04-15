@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:mechapp/libraries/toast.dart';
 
 String mUID, mEmail, mName, userType;
+Position currentLocation;
 
 Color primaryColor = Color.fromARGB(255, 22, 58, 78);
 Widget emptyList(String typeOf) {

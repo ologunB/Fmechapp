@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mechapp/change_password_fragment.dart';
 import 'package:mechapp/contact_us_fragment.dart';
 import 'package:mechapp/help_fragment.dart';
@@ -312,75 +313,91 @@ class _MechMainPageState extends State<MechMainPage> {
       );
     }
 
-    return DrawerScaffold(
-      percentage: 0.7,
-      contentShadow: [
-        BoxShadow(
-            color: const Color(0x44000000),
-            offset: const Offset(0.0, 0.0),
-            blurRadius: 50.0,
-            spreadRadius: 5.0)
-      ],
-      cornerRadius: 50,
-      appBar: AppBarProps(
-        title: Text(title),
-      ),
-      menuView: MenuView(
-        menu: menu,
-        selectorColor: Colors.blue,
-        headerView: _headerView(),
-        footerView: _footerView(),
-        animation: false,
-        color: Theme.of(context).primaryColor,
-        selectedItemId: selectedMenuItemId,
-        onMenuItemSelected: (String itemId) {
-          selectedMenuItemId = itemId;
-          if (itemId == "Home") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[0];
+    return WillPopScope(
+      onWillPop: () async {
+        showDialog(
+            context: context,
+            builder: (_) {
+              return CustomDialog(
+                title: "Do you want to exit the app?",
+                includeHeader: true,
+                onClicked: () {
+                  SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                },
+              );
             });
-          } else if (itemId == "Profile") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[1];
-            });
-          } else if (itemId == "My Jobs") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[2];
-            });
-          } else if (itemId == "Notifications") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[3];
-            });
-          } else if (itemId == "Help") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[4];
-            });
-          } else if (itemId == "Make Payment") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[5];
-            });
-          } else if (itemId == "Request Payment") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[6];
-            });
-          } else if (itemId == "Contact Us") {
-            setState(() {
-              title = selectedMenuItemId;
-              currentWidget = pages[7];
-            });
-          }
-        },
-      ),
-      contentView: Screen(
-        contentBuilder: (context) => currentWidget,
-        color: Colors.white,
+        return false;
+      },
+      child: DrawerScaffold(
+        percentage: 0.7,
+        contentShadow: [
+          BoxShadow(
+              color: const Color(0x44000000),
+              offset: const Offset(0.0, 0.0),
+              blurRadius: 50.0,
+              spreadRadius: 5.0)
+        ],
+        cornerRadius: 50,
+        appBar: AppBarProps(
+          title: Text(title),
+        ),
+        menuView: MenuView(
+          menu: menu,
+          selectorColor: Colors.blue,
+          headerView: _headerView(),
+          footerView: _footerView(),
+          animation: false,
+          color: Theme.of(context).primaryColor,
+          selectedItemId: selectedMenuItemId,
+          onMenuItemSelected: (String itemId) {
+            selectedMenuItemId = itemId;
+            if (itemId == "Home") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[0];
+              });
+            } else if (itemId == "Profile") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[1];
+              });
+            } else if (itemId == "My Jobs") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[2];
+              });
+            } else if (itemId == "Notifications") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[3];
+              });
+            } else if (itemId == "Help") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[4];
+              });
+            } else if (itemId == "Make Payment") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[5];
+              });
+            } else if (itemId == "Request Payment") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[6];
+              });
+            } else if (itemId == "Contact Us") {
+              setState(() {
+                title = selectedMenuItemId;
+                currentWidget = pages[7];
+              });
+            }
+          },
+        ),
+        contentView: Screen(
+          contentBuilder: (context) => currentWidget,
+          color: Colors.white,
+        ),
       ),
     );
   }
